@@ -35,6 +35,7 @@ import {
   submitRideRequest,
   withdrawRideRequest,
 } from './lib/rideRequests';
+import { DEFAULT_RIDE_FILTERS, filterAndSortRides } from './lib/rideFilters';
 import { colors } from './theme/theme';
 import TabBar from './components/TabBar';
 import Toast from './components/Toast';
@@ -189,6 +190,10 @@ export default function App() {
 
   // How Available Rides is ordered: 'default' (posting order) or 'destination'.
   const [rideSortOrder, setRideSortOrder] = useState('default');
+
+  // Rider mode's search, date, seat, and sort choices for Available Rides
+  // (lib/rideFilters.js). Kept here so they survive switching tabs.
+  const [rideFilters, setRideFilters] = useState(DEFAULT_RIDE_FILTERS);
 
   // True while a Post Ride press is being handled, so a fast double-tap
   // can't post the same ride twice before the form has a chance to close.
@@ -569,6 +574,7 @@ export default function App() {
     setSelectedRideDriverId(null);
     setReservingDriverId(null);
     setRequestNotice('');
+    setRideFilters(DEFAULT_RIDE_FILTERS);
     setToast(null);
     setActiveTab('home');
   }
@@ -1898,6 +1904,10 @@ export default function App() {
     });
   }
 
+  // What Rider mode's Available Rides shows: the same rides narrowed and
+  // ordered by rideFilters. Driver mode keeps using sortedDrivers.
+  const filteredRiderRides = filterAndSortRides(drivers, rideFilters);
+
   // The ride open in the form's Edit mode, if any.
   const editingDriver =
     editingRideId !== null ? drivers.find((driver) => driver.id === editingRideId) || null : null;
@@ -2123,6 +2133,9 @@ export default function App() {
               handleRefresh={handleRefresh}
               rideSortOrder={rideSortOrder}
               setRideSortOrder={setRideSortOrder}
+              filteredRiderRides={filteredRiderRides}
+              rideFilters={rideFilters}
+              setRideFilters={setRideFilters}
               handleViewRideDetails={handleViewRideDetails}
               handleQuickRequest={handleQuickRequest}
               handleLeaveWaitlist={handleLeaveWaitlist}

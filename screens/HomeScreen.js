@@ -25,7 +25,9 @@ import SegmentedControl from '../components/SegmentedControl';
 import Notice from '../components/Notice';
 import RideCard from '../components/RideCard';
 import RiderCard from '../components/RiderCard';
+import RideFilterPanel from '../components/RideFilterPanel';
 import { RIDE_SORT_OPTIONS } from '../lib/format';
+import { DEFAULT_RIDE_FILTERS } from '../lib/rideFilters';
 import { colors, gutter, radius, spacing, typography } from '../theme/theme';
 
 // "Good morning" / "Good afternoon" / "Good evening" from the device clock.
@@ -61,6 +63,9 @@ export default function HomeScreen({
   handleRefresh,
   rideSortOrder,
   setRideSortOrder,
+  filteredRiderRides,
+  rideFilters,
+  setRideFilters,
   handleViewRideDetails,
   handleQuickRequest,
   handleLeaveWaitlist,
@@ -100,6 +105,19 @@ export default function HomeScreen({
   }
 
   const firstName = currentUser.name.trim().split(/\s+/)[0];
+
+  // Rider mode searches/filters Available Rides; Driver mode keeps the plain
+  // sort control.
+  const visibleRides = isDriver ? sortedDrivers : filteredRiderRides;
+
+  function handleChangeRideFilters(changes) {
+    setRideFilters((current) => ({ ...current, ...changes }));
+  }
+
+  function handleClearRideFilters() {
+    Keyboard.dismiss();
+    setRideFilters(DEFAULT_RIDE_FILTERS);
+  }
 
   function renderBoard() {
     return (
@@ -182,7 +200,18 @@ export default function HomeScreen({
             right={<Badge label={String(drivers.length)} tone="driver" />}
           />
 
-          {drivers.length > 1 && (
+          {!isDriver && drivers.length > 0 && (
+            <RideFilterPanel
+              filters={rideFilters}
+              onChange={handleChangeRideFilters}
+              onClear={handleClearRideFilters}
+              resultCount={visibleRides.length}
+              totalCount={drivers.length}
+              style={styles.filters}
+            />
+          )}
+
+          {isDriver && drivers.length > 1 && (
             <SegmentedControl
               options={RIDE_SORT_OPTIONS}
               value={rideSortOrder}
@@ -222,9 +251,18 @@ export default function HomeScreen({
               onAction={handleRefresh}
               style={styles.sectionGap}
             />
+          ) : visibleRides.length === 0 ? (
+            <EmptyState
+              icon="search-outline"
+              title="No rides match your search."
+              message="Try another destination, date, or seat count."
+              actionLabel="Clear Filters"
+              onAction={handleClearRideFilters}
+              style={styles.sectionGap}
+            />
           ) : (
             <View style={styles.sectionGap}>
-              {sortedDrivers.map((driver) => (
+              {visibleRides.map((driver) => (
                 <RideCard
                   key={driver.id}
                   ride={driver}
@@ -453,6 +491,9 @@ const styles = StyleSheet.create({
   // Board sections
   sort: {
     marginBottom: spacing.md,
+  },
+  filters: {
+    marginBottom: spacing.lg,
   },
   sectionGap: {
     marginBottom: spacing.xxl,
