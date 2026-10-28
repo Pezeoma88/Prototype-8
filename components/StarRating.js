@@ -6,7 +6,7 @@ import { colors } from '../theme/theme';
 //   Display:  <StarRating value={4.3} />  — rounded to the nearest half star.
 //   Input:    <StarRating value={rating} onChange={setRating} size={34} />
 //             — each star is a button; tapping the third sets 3.
-// Stars use the amber status color, which reads clearly on the navy theme.
+// Stars use the theme's amber star color.
 export default function StarRating({ value = 0, onChange, size = 16, disabled = false, style }) {
   const isInput = typeof onChange === 'function';
   const shown = Math.round(Math.max(0, Math.min(5, value)) * 2) / 2;
@@ -24,7 +24,7 @@ export default function StarRating({ value = 0, onChange, size = 16, disabled = 
             key={star}
             name={shown >= star ? 'star' : shown >= star - 0.5 ? 'star-half' : 'star-outline'}
             size={size}
-            color={colors.pending}
+            color={colors.star}
             style={styles.gap}
           />
         ))}
@@ -50,7 +50,7 @@ export default function StarRating({ value = 0, onChange, size = 16, disabled = 
             <Ionicons
               name={isOn ? 'star' : 'star-outline'}
               size={size}
-              color={isOn ? colors.pending : colors.textFaint}
+              color={isOn ? colors.star : colors.borderStrong}
             />
           </Pressable>
         );

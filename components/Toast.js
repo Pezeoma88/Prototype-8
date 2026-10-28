@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, radius, shadow, spacing, typography } from '../theme/theme';
 
 // How long a toast stays on screen before fading out.
 const VISIBLE_MS = 3000;
@@ -91,16 +91,12 @@ const styles = StyleSheet.create({
   box: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
     borderWidth: 1,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    ...shadow.raised,
   },
   iconChip: {
     width: 32,

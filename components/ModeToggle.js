@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, roleColor, spacing, typography } from '../theme/theme';
+import { colors, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
 
 const MODES = [
   { key: 'driver', label: 'Driver', icon: 'car-sport', hint: 'Offer rides and manage requests for them' },
@@ -8,10 +8,11 @@ const MODES = [
 ];
 
 // Driver | Rider switch for the session's activeMode, shown on Home,
-// Requests, and Profile. The active side is filled with its role color
-// (blue Driver, orange Rider) so the current mode is obvious at a glance.
-// Tapping the side that's already active does nothing. Screen readers hear
-// it as a two-option radio group ("Driver mode, selected").
+// Requests, and Profile. iOS-style segmented switch: a light gray track
+// with the active side raised as a white pill, its icon and label in the
+// role's color (blue Driver, teal Rider). Tapping the side that's already
+// active does nothing. Screen readers hear it as a two-option radio group
+// ("Driver mode, selected").
 export default function ModeToggle({ activeMode, onChange, style }) {
   return (
     <View style={[styles.track, style]} accessibilityRole="radiogroup" accessibilityLabel="Mode">
@@ -31,21 +32,18 @@ export default function ModeToggle({ activeMode, onChange, style }) {
             hitSlop={4}
             style={({ pressed }) => [
               styles.segment,
-              isActive && { backgroundColor: tint },
+              isActive && styles.segmentActive,
               pressed && !isActive && styles.pressed,
             ]}
           >
             <Ionicons
               name={isActive ? mode.icon : `${mode.icon}-outline`}
               size={18}
-              color={isActive ? colors.textOnAccent : colors.textMuted}
+              color={isActive ? tint : colors.textMuted}
             />
-            <Text style={[styles.label, isActive && styles.labelActive]} numberOfLines={1}>
+            <Text style={[styles.label, isActive && { color: tint }]} numberOfLines={1}>
               {mode.label}
             </Text>
-            {isActive && (
-              <Ionicons name="checkmark" size={15} color={colors.textOnAccent} style={styles.check} />
-            )}
           </Pressable>
         );
       })}
@@ -56,34 +54,30 @@ export default function ModeToggle({ activeMode, onChange, style }) {
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.surfaceSunken,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: 4,
   },
   segment: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 42,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
   },
+  segmentActive: {
+    backgroundColor: colors.surface,
+    ...shadow.card,
+    shadowOpacity: 0.08,
+  },
   pressed: {
-    backgroundColor: colors.border,
+    opacity: 0.6,
   },
   label: {
     ...typography.bodyStrong,
     color: colors.textMuted,
     marginLeft: spacing.sm,
-  },
-  labelActive: {
-    color: colors.textOnAccent,
-    fontWeight: '700',
-  },
-  check: {
-    marginLeft: spacing.xs,
   },
 });

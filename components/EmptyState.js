@@ -4,12 +4,23 @@ import AppButton from './AppButton';
 import { colors, radius, spacing, typography } from '../theme/theme';
 
 // Friendly placeholder for screens/sections with nothing to show yet, with an
-// optional action button (e.g. Refresh).
-export default function EmptyState({ icon = 'sparkles-outline', title, message, actionLabel, onAction, style }) {
+// optional action button (e.g. Refresh). tone="danger" is the error version
+// (red icon), used when something couldn't be loaded, so empty and error
+// states look the same everywhere apart from that color.
+export default function EmptyState({
+  icon = 'sparkles-outline',
+  title,
+  message,
+  actionLabel,
+  onAction,
+  tone = 'default',
+  style,
+}) {
+  const isError = tone === 'danger';
   return (
     <View style={[styles.wrap, style]}>
-      <View style={styles.iconCircle}>
-        <Ionicons name={icon} size={26} color={colors.primary} />
+      <View style={[styles.iconCircle, isError && styles.iconCircleError]}>
+        <Ionicons name={icon} size={26} color={isError ? colors.danger : colors.primary} />
       </View>
       {title ? <Text style={styles.title}>{title}</Text> : null}
       {message ? <Text style={styles.message}>{message}</Text> : null}
@@ -23,9 +34,9 @@ export default function EmptyState({ icon = 'sparkles-outline', title, message, 
 const styles = StyleSheet.create({
   wrap: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
+    paddingVertical: spacing.xxl + spacing.xs,
     paddingHorizontal: spacing.xl,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -38,6 +49,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
+  },
+  iconCircleError: {
+    backgroundColor: colors.dangerSoft,
   },
   title: {
     ...typography.title,
@@ -53,5 +67,6 @@ const styles = StyleSheet.create({
   },
   action: {
     marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
 });

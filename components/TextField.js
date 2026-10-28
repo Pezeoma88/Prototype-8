@@ -3,10 +3,11 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, radius, spacing, typography } from '../theme/theme';
 
-// Labeled, rounded dark input with an optional leading icon, hint, and
+// Labeled, rounded white input with an optional leading icon, trailing
+// accessory (`right`, e.g. a show/hide password button), hint, and
 // error. Any other TextInput props (keyboardType, returnKeyType, multiline…)
 // pass straight through to the underlying TextInput.
-export default function TextField({ label, icon, hint, error, multiline, style, onFocus, onBlur, ...inputProps }) {
+export default function TextField({ label, icon, right, hint, error, multiline, style, onFocus, onBlur, ...inputProps }) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -34,7 +35,7 @@ export default function TextField({ label, icon, hint, error, multiline, style, 
           style={[styles.input, multiline && styles.inputMultiline]}
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.primary}
-          keyboardAppearance="dark"
+          keyboardAppearance="light"
           onFocus={(event) => {
             setIsFocused(true);
             onFocus?.(event);
@@ -44,6 +45,7 @@ export default function TextField({ label, icon, hint, error, multiline, style, 
             onBlur?.(event);
           }}
         />
+        {right}
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : hint ? <Text style={styles.hint}>{hint}</Text> : null}
     </View>
@@ -56,13 +58,13 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    color: colors.textMuted,
+    color: colors.text,
     marginBottom: spacing.sm,
   },
   box: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     ...typography.caption,
-    color: colors.textFaint,
+    color: colors.textMuted,
     marginTop: 6,
     lineHeight: 17,
   },

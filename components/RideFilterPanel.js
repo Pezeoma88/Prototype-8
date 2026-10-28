@@ -138,7 +138,7 @@ export default function RideFilterPanel({ filters, onChange, onClear, resultCoun
                 value={filters.date || startOfToday()}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                themeVariant="dark"
+                themeVariant="light"
                 textColor={colors.text}
                 locale="en-US"
                 onValueChange={(event, date) => handleDatePicked(date)}

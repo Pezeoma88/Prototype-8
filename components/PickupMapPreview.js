@@ -40,7 +40,7 @@ export default function PickupMapPreview({ pickup, style }) {
         style={StyleSheet.absoluteFill}
         initialRegion={region}
         onMapReady={() => mapRef.current?.animateToRegion(region, 0)}
-        userInterfaceStyle="dark"
+        userInterfaceStyle="light"
         showsUserLocation={false}
         toolbarEnabled={false}
         scrollEnabled={false}

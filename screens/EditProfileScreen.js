@@ -18,13 +18,15 @@ import { BIO_MAX_LENGTH, NAME_MAX_LENGTH, VEHICLE_MAX_LENGTH } from '../lib/form
 import { colors, gutter, spacing, typography } from '../theme/theme';
 
 // Edit Profile, opened from the Profile tab. One form for the whole person:
-// General (name, email, bio) and the optional Driver information (vehicle
+// General (name, bio) and the optional Driver information (vehicle
 // make/model), which stays saved while the person uses Rider mode. State,
 // validation, and saving stay in App.js; this screen only renders them.
 //
 // The profile photo is picked from the photo library (square crop) and
 // previewed here; App uploads it to Supabase Storage only on Save Changes.
-// License plates aren't collected at all in this prototype.
+// License plates aren't collected at all in this prototype. Username and
+// email aren't edited here: the username is the sign-in name, and the email
+// is private to Supabase Auth (shown read-only on Profile).
 export default function EditProfileScreen({
   activeMode,
   currentPhotoUri,
@@ -35,8 +37,6 @@ export default function EditProfileScreen({
   handleDiscardProfilePhoto,
   profileNameInput,
   setProfileNameInput,
-  profileEmailInput,
-  setProfileEmailInput,
   profileBioInput,
   setProfileBioInput,
   profileVehicleInput,
@@ -85,20 +85,6 @@ export default function EditProfileScreen({
             textContentType="name"
             returnKeyType="done"
             onSubmitEditing={Keyboard.dismiss}
-          />
-          <TextField
-            label="Email"
-            icon="mail-outline"
-            placeholder="e.g. jordan@example.edu"
-            value={profileEmailInput}
-            onChangeText={setProfileEmailInput}
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="done"
-            onSubmitEditing={Keyboard.dismiss}
-            hint="This is how you sign in. If you change it, sign in with the new email next time — the old one won’t find your account."
           />
           <TextField
             label="Bio"

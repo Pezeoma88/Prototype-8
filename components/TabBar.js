@@ -11,8 +11,8 @@ export const TABS = [
   { key: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
 ];
 
-// Compact bottom navigation. The active tab gets a filled icon, primary
-// color, and a small dot underneath. Bottom padding follows the device's
+// Compact white bottom navigation. The active tab gets a filled icon, the
+// primary blue, and a short bar above its icon. Bottom padding follows the device's
 // safe area so it clears the iPhone home indicator.
 export default function TabBar({ activeTab, onTabPress, badges = {} }) {
   const insets = useSafeAreaInsets();
@@ -35,6 +35,7 @@ export default function TabBar({ activeTab, onTabPress, badges = {} }) {
           >
             {({ pressed }) => (
               <View style={[styles.tabInner, pressed && styles.tabPressed]}>
+                <View style={[styles.indicator, isActive && styles.indicatorActive]} />
                 <View>
                   <Ionicons name={isActive ? tab.activeIcon : tab.icon} size={23} color={tint} />
                   {badgeCount > 0 && (
@@ -46,7 +47,6 @@ export default function TabBar({ activeTab, onTabPress, badges = {} }) {
                 <Text style={[styles.label, { color: tint }, isActive && styles.labelActive]}>
                   {tab.label}
                 </Text>
-                <View style={[styles.dot, isActive && styles.dotActive]} />
               </View>
             )}
           </Pressable>
@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: spacing.sm,
   },
   tab: {
     flex: 1,
@@ -75,20 +74,21 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     marginTop: 3,
   },
   labelActive: {
-    fontWeight: '700',
+    fontWeight: '600',
   },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 3,
+  indicator: {
+    width: 28,
+    height: 3,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    marginBottom: 6,
     backgroundColor: 'transparent',
   },
-  dotActive: {
+  indicatorActive: {
     backgroundColor: colors.primary,
   },
   badge: {
@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     paddingHorizontal: 4,
-    backgroundColor: colors.pending,
+    backgroundColor: colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: colors.bg,
+    fontWeight: '700',
+    color: colors.textOnAccent,
   },
 });

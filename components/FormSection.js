@@ -11,7 +11,7 @@ export default function FormSection({ title, icon, tint = colors.primary, right,
       {title ? (
         <View style={styles.header}>
           {icon ? (
-            <View style={[styles.iconWrap, { backgroundColor: `${tint}29` }]}>
+            <View style={[styles.iconWrap, { backgroundColor: `${tint}14` }]}>
               <Ionicons name={icon} size={15} color={tint} />
             </View>
           ) : null}

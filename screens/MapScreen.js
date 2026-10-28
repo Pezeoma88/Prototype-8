@@ -174,7 +174,7 @@ export default function MapScreen({
           ref={mapRef}
           style={StyleSheet.absoluteFill}
           initialRegion={SMU_MAP_REGION}
-          userInterfaceStyle="dark"
+          userInterfaceStyle="light"
           showsUserLocation={false}
           toolbarEnabled={false}
           onPress={(event) => {

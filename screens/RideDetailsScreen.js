@@ -15,6 +15,7 @@ import ReviewList from '../components/ReviewList';
 import RouteLine from '../components/RouteLine';
 import SectionHeader from '../components/SectionHeader';
 import TextField from '../components/TextField';
+import { getPastRideLabel } from '../lib/rideStatus';
 import { colors, radius, spacing, typography } from '../theme/theme';
 
 // Ride Details: shown after selecting a ride from Available Rides. Shows
@@ -29,6 +30,12 @@ import { colors, radius, spacing, typography } from '../theme/theme';
 // (DriverReviewSection). Like your own seat, your review is yours in either
 // mode. Who may review is decided by the database; `reviewEligibility` only
 // picks what to show.
+//
+// Expiration: once the ride's departure time passes (`isDeparted`, from
+// lib/rideStatus.js via App), the ride is history. It can't be requested,
+// edited, cancelled or left, and its pending requests show as Expired. The
+// details, passengers and reviews stay visible for reference, and the review
+// form keeps working.
 export default function RideDetailsScreen({
   detailsDriver,
   currentUser,
@@ -44,6 +51,7 @@ export default function RideDetailsScreen({
   handleWithdrawArrivedRequest,
   isOwnerDriver,
   isOwnDetailsRide,
+  isDeparted,
   reservingDriverId,
   requestReasonInput,
   setRequestReasonInput,
@@ -61,11 +69,20 @@ export default function RideDetailsScreen({
   handleSubmitReview,
 }) {
   const isFull = detailsDriver.seats === 0;
+  // Driver controls only while the ride is still upcoming.
+  const canManage = isOwnerDriver && !isDeparted;
 
   function renderRiderAction() {
     // Requesting is hidden entirely on your own ride, so nobody can request
     // a seat from themselves.
     if (activeMode !== 'rider' || isOwnDetailsRide) {
+      return null;
+    }
+
+    // A departed ride can't be requested. An outcome panel that's already
+    // showing (e.g. a request that just went through) is still shown so the
+    // rider can read it; the departed banner explains the rest.
+    if (isDeparted && !requestSubmission) {
       return null;
     }
 
@@ -170,6 +187,7 @@ export default function RideDetailsScreen({
             <View style={styles.badgeRow}>
               <Badge label="Driver" tone="driver" />
               {isOwnDetailsRide && <Badge label="Your ride" tone="primary" />}
+              {isDeparted && <Badge label={getPastRideLabel(detailsDriver)} tone="muted" />}
             </View>
             <RatingSummary rating={detailsDriver.driverRating} style={styles.ratingRow} />
           </View>
@@ -184,13 +202,18 @@ export default function RideDetailsScreen({
           <PickupMapPreview pickup={detailsDriver.pickup} />
         </View>
 
-        <InfoRow icon="time-outline" label="Departs" value={detailsDriver.departureTime} divider />
+        <InfoRow
+          icon="time-outline"
+          label={isDeparted ? 'Departed' : 'Departs'}
+          value={detailsDriver.departureTime}
+          divider
+        />
         <InfoRow
           icon="people-outline"
           label="Available seats"
           divider
           right={
-            isFull ? (
+            isFull && !isDeparted ? (
               <View style={styles.rightAlign}>
                 <Badge label="Full" tone="danger" />
               </View>
@@ -202,6 +225,13 @@ export default function RideDetailsScreen({
           }
         />
       </Card>
+
+      {isDeparted && (
+        <Notice
+          tone="warning"
+          message={`This ride departed ${detailsDriver.departureTime}. It's no longer available to book and is kept here for history and reviews.`}
+        />
+      )}
 
       {requestNotice !== '' && <Notice message={requestNotice} />}
 
@@ -221,7 +251,7 @@ export default function RideDetailsScreen({
 
       {/* Your own ride while in Rider mode: driver controls stay in Driver
           mode, so offer a one-tap switch instead of showing them here. */}
-      {isOwnDetailsRide && activeMode === 'rider' && (
+      {isOwnDetailsRide && activeMode === 'rider' && !isDeparted && (
         <FormSection title="This is your ride" icon="car-sport" tint={colors.driver} style={styles.block}>
           <Text style={styles.panelText}>
             You&apos;re in Rider mode. Switch to Driver to accept or deny requests, edit this ride,
@@ -237,12 +267,19 @@ export default function RideDetailsScreen({
 
       {/* Pending requests */}
       <SectionHeader
-        title="Pending requests"
+        title={isDeparted ? 'Expired requests' : 'Pending requests'}
         role="rider"
-        right={<Badge label={String(detailsDriver.pendingRequests.length)} tone="pending" />}
+        right={
+          <Badge
+            label={String(detailsDriver.pendingRequests.length)}
+            tone={isDeparted ? 'muted' : 'pending'}
+          />
+        }
       />
       {detailsDriver.pendingRequests.length === 0 ? (
-        <Text style={styles.emptyText}>No pending requests.</Text>
+        <Text style={styles.emptyText}>
+          {isDeparted ? 'No requests were left unanswered.' : 'No pending requests.'}
+        </Text>
       ) : (
         <View style={styles.block}>
           {detailsDriver.pendingRequests.map((request) => (
@@ -253,7 +290,11 @@ export default function RideDetailsScreen({
                   <Text style={styles.personName} numberOfLines={1}>
                     {request.name}
                   </Text>
-                  <Badge label="Pending" tone="pending" style={styles.personBadge} />
+                  <Badge
+                    label={isDeparted ? 'Expired' : 'Pending'}
+                    tone={isDeparted ? 'muted' : 'pending'}
+                    style={styles.personBadge}
+                  />
                 </View>
               </View>
               {request.reason ? (
@@ -263,7 +304,7 @@ export default function RideDetailsScreen({
                   </Text>
                 </View>
               ) : null}
-              {isOwnerDriver && (
+              {canManage && (
                 <View style={styles.personActions}>
                   {/* Never offer "Accept" on a request from the ride's own
                       driver: they can't be their own passenger. */}
@@ -317,7 +358,7 @@ export default function RideDetailsScreen({
                     </Text>
                     <Badge label="Confirmed" tone="success" style={styles.personBadge} />
                   </View>
-                  {isSelf && (
+                  {isSelf && !isDeparted && (
                     <AppButton
                       title="Leave"
                       variant="destructive"
@@ -346,7 +387,7 @@ export default function RideDetailsScreen({
         />
       </View>
 
-      {isOwnerDriver && (
+      {canManage && (
         <View style={styles.ownerActions}>
           <AppButton
             title="Edit Ride"

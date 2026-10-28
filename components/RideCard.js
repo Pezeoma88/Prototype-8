@@ -6,31 +6,42 @@ import Badge from './Badge';
 import AppButton from './AppButton';
 import RatingSummary from './RatingSummary';
 import RouteLine from './RouteLine';
-import { colors, spacing, typography } from '../theme/theme';
+import { formatTimeUntil, getPastRideLabel, isRideDeparted } from '../lib/rideStatus';
+import { colors, radius, spacing, typography } from '../theme/theme';
 
-// Full-width Available Ride card (a Driver's OFFER). `ride` is one entry of
-// App's `drivers` state. Shows who is driving, where they're going, when,
-// and seats, plus the action that fits the viewer and their current mode
-// (App's activeMode):
+// Full-width ride card (a Driver's OFFER). `ride` is one entry of App's
+// `drivers` state. Reads top to bottom: when it leaves, the route, then who
+// is driving with the seats left, and finally the action that fits the
+// viewer and their current mode (App's activeMode):
 //   - your own ride, Driver mode:  Manage Ride
 //   - your own ride, Rider mode:   "Your ride" (switch to Driver to manage)
 //   - Rider mode:                  Request Ride (or its current status)
 // `myRequestStatus` is the signed-in person's request status for this ride
 // from Supabase, if any. A denied or cancelled request is final, so those
 // show as a status instead of a Request button.
-//   - anyone else:                 View Details
+//   - anyone else:                 Details only
+// A departed ride (its departure is at or before `nowMs`) is history: it
+// shows a Completed/Departed badge and never offers Request or Manage.
 // A ride with a pickup spot shows it above the destination; without one,
 // RouteLine shows the destination only. The driver's average rating and
 // review count sit under their name (ride.driverRating).
-export default function RideCard({ ride, currentUser, activeMode, myRequestStatus, onView, onRequest }) {
+export default function RideCard({ ride, currentUser, activeMode, myRequestStatus, nowMs, onView, onRequest }) {
   const isOwn = ride.driverAccountId === currentUser.id;
   const isFull = ride.seats === 0;
   const isRider = activeMode === 'rider';
+  const isPast = isRideDeparted(ride, nowMs);
   const alreadyConfirmed = ride.matchedRiders.some((r) => r.id === currentUser.id);
   const alreadyPending = ride.pendingRequests.some((req) => req.riderId === currentUser.id);
+  const timeUntil = formatTimeUntil(ride, nowMs);
 
   let primaryAction = null;
-  if (isOwn && !isRider) {
+  if (isPast) {
+    if (alreadyConfirmed) {
+      primaryAction = <StatusPill icon="checkmark-circle" label="You rode along" color={colors.success} />;
+    } else if (isOwn) {
+      primaryAction = <StatusPill icon="car-sport" label="You drove" color={colors.driver} />;
+    }
+  } else if (isOwn && !isRider) {
     primaryAction = <AppButton title="Manage Ride" icon="settings-outline" size="sm" onPress={onView} style={styles.flex} />;
   } else if (isOwn) {
     // Driver controls stay in Driver mode; Details offers the switch.
@@ -58,50 +69,54 @@ export default function RideCard({ ride, currentUser, activeMode, myRequestStatu
     }
   }
 
+  let seatBadge;
+  if (isPast) {
+    seatBadge = <Badge label={getPastRideLabel(ride)} tone="muted" />;
+  } else if (isFull) {
+    seatBadge = <Badge label="Full" tone="danger" />;
+  } else {
+    seatBadge = <Badge label={`${ride.seats} seat${ride.seats === 1 ? '' : 's'} left`} tone="success" />;
+  }
+
   return (
-    <Card onPress={onView} style={styles.card}>
-      <View style={styles.topRow}>
-        <Avatar name={ride.name} role="driver" uri={ride.avatarUrl} size={44} />
-        <View style={styles.nameCol}>
-          <Text style={styles.name} numberOfLines={1}>
-            {ride.name}
-          </Text>
-          <View style={styles.subRow}>
-            <Ionicons name="car-sport" size={13} color={colors.driver} />
-            <Text style={styles.subText} numberOfLines={1}>
-              {isOwn && isRider
-                ? 'Your ride · switch to Driver to manage'
-                : isOwn
-                  ? 'Your ride'
-                  : 'Driver · offering seats'}
-            </Text>
-          </View>
-          <RatingSummary rating={ride.driverRating} style={styles.ratingRow} />
-        </View>
-        <Badge
-          label={isFull ? 'Full' : `${ride.seats} seat${ride.seats === 1 ? '' : 's'} left`}
-          tone={isFull ? 'danger' : 'driver'}
-        />
-      </View>
-
-      <View style={styles.route}>
-        <RouteLine pickup={ride.pickup?.label} destination={ride.destination} tint={colors.driver} />
-      </View>
-
-      <View style={styles.metaRow}>
-        <View style={styles.metaItem}>
-          <Ionicons name="time-outline" size={15} color={colors.textMuted} />
-          <Text style={styles.metaText} numberOfLines={1}>
+    <Card onPress={onView} style={[styles.card, isPast && styles.cardPast]}>
+      {/* When */}
+      <View style={styles.whenRow}>
+        <View style={styles.timeChip}>
+          <Ionicons name="calendar-clear-outline" size={14} color={isPast ? colors.textMuted : colors.primary} />
+          <Text style={[styles.timeText, isPast && styles.timeTextPast]} numberOfLines={1}>
             {ride.departureTime}
           </Text>
         </View>
-        <View style={styles.metaItem}>
-          <Ionicons name="people-outline" size={15} color={colors.textMuted} />
-          <Text style={styles.metaText} numberOfLines={1}>
-            {ride.pendingRequests.length} pending · {ride.matchedRiders.length} confirmed
-          </Text>
-        </View>
+        {timeUntil ? <Text style={styles.timeUntil}>{timeUntil}</Text> : null}
       </View>
+
+      {/* Where */}
+      <View style={styles.route}>
+        <RouteLine
+          pickup={ride.pickup?.label}
+          destination={ride.destination}
+          tint={isPast ? colors.textFaint : colors.driver}
+        />
+      </View>
+
+      {/* Who + seats */}
+      <View style={styles.driverRow}>
+        <Avatar name={ride.name} role="driver" uri={ride.avatarUrl} size={36} />
+        <View style={styles.nameCol}>
+          <Text style={styles.name} numberOfLines={1}>
+            {isOwn ? `${ride.name} (You)` : ride.name}
+          </Text>
+          <RatingSummary rating={ride.driverRating} style={styles.ratingRow} />
+        </View>
+        {seatBadge}
+      </View>
+
+      {!isPast && (ride.pendingRequests.length > 0 || ride.matchedRiders.length > 0) && (
+        <Text style={styles.requestSummary} numberOfLines={1}>
+          {ride.matchedRiders.length} confirmed · {ride.pendingRequests.length} pending
+        </Text>
+      )}
 
       <View style={styles.actions}>
         <AppButton
@@ -119,7 +134,7 @@ export default function RideCard({ ride, currentUser, activeMode, myRequestStatu
 
 function StatusPill({ icon, label, color }) {
   return (
-    <View style={[styles.statusPill, { backgroundColor: `${color}26` }]}>
+    <View style={[styles.statusPill, { backgroundColor: `${color}14` }]}>
       <Ionicons name={icon} size={15} color={color} />
       <Text style={[styles.statusPillText, { color }]} numberOfLines={1}>
         {label}
@@ -132,9 +147,43 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
   },
-  topRow: {
+  cardPast: {
+    backgroundColor: colors.surfaceRaised,
+  },
+  whenRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  timeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  timeText: {
+    ...typography.label,
+    color: colors.primary,
+    marginLeft: 6,
+    flexShrink: 1,
+  },
+  timeTextPast: {
+    color: colors.textMuted,
+  },
+  timeUntil: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginLeft: spacing.sm,
+  },
+  route: {
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  driverRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.md,
   },
   nameCol: {
     flex: 1,
@@ -142,48 +191,22 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   name: {
-    ...typography.title,
+    ...typography.bodyStrong,
     color: colors.text,
   },
-  subRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  ratingRow: {
     marginTop: 2,
   },
-  ratingRow: {
-    marginTop: 3,
-  },
-  subText: {
+  requestSummary: {
     ...typography.caption,
     color: colors.textMuted,
-    marginLeft: 5,
-    flexShrink: 1,
-  },
-  route: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  metaRow: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-    gap: 6,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metaText: {
-    ...typography.label,
-    color: colors.textMuted,
-    marginLeft: 6,
-    flexShrink: 1,
+    marginTop: spacing.sm,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   flex: {
     flex: 1,
@@ -193,16 +216,17 @@ const styles = StyleSheet.create({
   },
   statusPill: {
     flex: 1,
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
+    borderRadius: radius.pill,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
   statusPillText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     marginLeft: 6,
   },
 });

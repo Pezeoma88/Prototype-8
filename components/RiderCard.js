@@ -7,7 +7,7 @@ import AppButton from './AppButton';
 import { colors, spacing, typography } from '../theme/theme';
 
 // Riders Looking for a Ride card (a Rider's REQUEST for transportation, not
-// a Driver's offer). Orange accent stripe, orange avatar, and a "Needs a
+// a Driver's offer). Teal accent stripe, teal avatar, and a "Needs a
 // ride" badge keep it visually distinct from blue Available Ride cards.
 //
 // Riders can't post a destination/time yet (that's the ride-needs phase), so

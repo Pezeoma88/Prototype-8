@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme/theme';
 
-// Layered dark card with a thin border. Pass onPress to make the whole card
-// tappable (it dims slightly while pressed).
+// White card with a thin gray border and a very soft shadow. Pass onPress to
+// make the whole card tappable (it tints slightly while pressed).
 export default function Card({ children, onPress, style }) {
   if (onPress) {
     return (

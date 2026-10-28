@@ -1,15 +1,25 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, roleColor, spacing, typography } from '../theme/theme';
 
-// Section title with a small role-colored accent bar (blue = Driver offers,
-// orange = Rider needs) and an optional element on the right.
-export default function SectionHeader({ title, role, right, style }) {
+// Section title with an optional subtitle and an optional element on the
+// right (usually a count Badge). `role` adds a small dot in the role's
+// color (blue = Driver offers, teal = Rider needs).
+export default function SectionHeader({ title, subtitle, role, right, style }) {
   return (
     <View style={[styles.row, style]}>
-      {role ? <View style={[styles.accent, { backgroundColor: roleColor(role) }]} /> : null}
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
+      <View style={styles.textGroup}>
+        <View style={styles.titleRow}>
+          {role ? <View style={[styles.dot, { backgroundColor: roleColor(role) }]} /> : null}
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+        </View>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={2}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
       {right ? <View style={styles.right}>{right}</View> : null}
     </View>
   );
@@ -21,16 +31,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
-  accent: {
-    width: 4,
-    height: 16,
-    borderRadius: 2,
+  textGroup: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: spacing.sm,
   },
   title: {
     ...typography.title,
+    fontWeight: '700',
     color: colors.text,
-    flex: 1,
+    flexShrink: 1,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   right: {
     marginLeft: spacing.sm,

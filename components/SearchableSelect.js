@@ -105,7 +105,7 @@ export default function SearchableSelect({
           placeholder={isOpen && !freeText ? 'Search places' : placeholder}
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.primary}
-          keyboardAppearance="dark"
+          keyboardAppearance="light"
           autoCorrect={false}
           returnKeyType="done"
           onSubmitEditing={close}

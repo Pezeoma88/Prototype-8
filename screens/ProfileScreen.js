@@ -9,11 +9,12 @@ import ModeToggle from '../components/ModeToggle';
 import RatingSummary from '../components/RatingSummary';
 import ReviewList from '../components/ReviewList';
 import DemoNetworkPanel from '../components/DemoNetworkPanel';
-import { colors, gutter, radius, roleColor, spacing, typography } from '../theme/theme';
+import { colors, gutter, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
 
 // Profile tab, laid out for the full Prototype 5 profile (photo, bio,
-// vehicle, ratings, reviews). Photo, name, email, bio, and vehicle
-// make/model are real, saved in Supabase and changed from Edit Profile.
+// vehicle, ratings, reviews). Photo, name, bio, and vehicle make/model are
+// real, saved in Supabase and changed from Edit Profile. Username and email
+// come from the Supabase Auth account and are shown read-only.
 // Ratings and reviews are the real ones riders left (driver_reviews):
 // `myDriverRating` is { average, count }, null with none yet, or undefined
 // when they couldn't be loaded; `myDriverReviews` is the list, or null.
@@ -37,10 +38,9 @@ export default function ProfileScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      {/* Hero */}
+      {/* Header card */}
       <View style={styles.hero}>
-        <View style={[styles.glow, { backgroundColor: `${tint}1F` }]} />
-        <Avatar name={currentUser.name} role={activeMode} uri={currentUser.avatarUrl} size={96} ring />
+        <Avatar name={currentUser.name} role={activeMode} uri={currentUser.avatarUrl} size={88} />
         <Text style={styles.name} numberOfLines={2}>
           {currentUser.name}
         </Text>
@@ -58,7 +58,7 @@ export default function ProfileScreen({
           onPress={handleStartEditProfile}
           style={styles.editButton}
         />
-        <Text style={styles.editHint}>Change your photo, name, email, bio, and vehicle.</Text>
+        <Text style={styles.editHint}>Change your photo, name, bio, and vehicle.</Text>
       </View>
 
       {/* Mode: switch Driver ↔ Rider without signing out */}
@@ -143,7 +143,8 @@ export default function ProfileScreen({
       {/* Account */}
       <FormSection title="Account" icon="settings-outline" tint={colors.textMuted}>
         <InfoRow icon="person-outline" label="Name" value={currentUser.name} />
-        <InfoRow icon="mail-outline" label="Email" value={currentUser.email} divider />
+        <InfoRow icon="at-outline" label="Username" value={currentUser.username} divider />
+        <InfoRow icon="mail-outline" label="Email (private)" value={currentUser.email} divider />
         <InfoRow
           icon={isDriver ? 'car-sport-outline' : 'walk-outline'}
           label="Current mode"
@@ -229,15 +230,15 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  glow: {
-    position: 'absolute',
-    top: 0,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
   },
   name: {
     ...typography.heading,

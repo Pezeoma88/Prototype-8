@@ -382,7 +382,7 @@ export default function RideForm({
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={departurePickerMinimumDate}
               minuteInterval={DEPARTURE_MINUTE_INTERVAL}
-              themeVariant="dark"
+              themeVariant="light"
               textColor={colors.text}
               locale="en-US"
               onValueChange={(event, date) => handleDeparturePicked(date)}

@@ -1,6 +1,5 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +18,7 @@ import Badge from '../components/Badge';
 import Card from '../components/Card';
 import AppButton from '../components/AppButton';
 import EmptyState from '../components/EmptyState';
+import LoadingState from '../components/LoadingState';
 import ModeToggle from '../components/ModeToggle';
 import SectionHeader from '../components/SectionHeader';
 import SegmentedControl from '../components/SegmentedControl';
@@ -28,7 +28,7 @@ import RiderCard from '../components/RiderCard';
 import RideFilterPanel from '../components/RideFilterPanel';
 import { RIDE_SORT_OPTIONS } from '../lib/format';
 import { DEFAULT_RIDE_FILTERS } from '../lib/rideFilters';
-import { colors, gutter, radius, spacing, typography } from '../theme/theme';
+import { colors, gutter, radius, shadow, spacing, typography } from '../theme/theme';
 
 // "Good morning" / "Good afternoon" / "Good evening" from the device clock.
 function getGreeting() {
@@ -39,8 +39,15 @@ function getGreeting() {
 }
 
 // Home tab: the shared CarpoolBoard. Shows a greeting, the Driver/Rider
-// mode toggle, what CarpoolBoard is for, the role's main actions, then Available Rides (Driver offers, blue)
-// and Riders Looking for a Ride (Rider requests, orange).
+// mode toggle, the role's main actions, then Upcoming Rides (Driver offers,
+// blue), Riders Looking for a Ride (Rider requests, teal), and the signed-in
+// person's own past rides.
+//
+// Ride expiration: `drivers` here is only the rides that haven't departed
+// yet (App filters them with lib/rideStatus.js), so the board, its counts,
+// search and filters never offer a ride that already left. `pastRides` are
+// departed rides this person drove or requested, shown collapsed at the
+// bottom as history (they keep their details and reviews).
 //
 // Ride Details and the Offer a Ride / Need a Ride forms open in place of the
 // board (App passes them in as ready-made elements). State and Supabase
@@ -55,6 +62,8 @@ export default function HomeScreen({
   handleSetMode,
   drivers,
   sortedDrivers,
+  pastRides,
+  nowMs,
   riders,
   myRequestStatusByRideId,
   isBoardLoading,
@@ -82,10 +91,15 @@ export default function HomeScreen({
   rideForm,
   riderForm,
 }) {
-  // Y positions of the two board sections, so "Find a Ride" / "Find Riders"
-  // can scroll straight to them.
+  // The two board sections, so "Find a Ride" / "Find Riders" can scroll
+  // straight to them. The Y positions from onLayout are a fallback; the
+  // section is measured again when tapped, in case content above it moved.
+  const ridesSectionRef = useRef(null);
+  const ridersSectionRef = useRef(null);
   const ridesSectionY = useRef(0);
   const ridersSectionY = useRef(0);
+  // Past rides start collapsed so the bookable board stays the focus.
+  const [showPastRides, setShowPastRides] = useState(false);
 
   // Driver/Rider UI follows the session's activeMode, not profiles.role.
   const isDriver = activeMode === 'driver';
@@ -102,6 +116,23 @@ export default function HomeScreen({
 
   function scrollToY(y) {
     scrollViewRef.current?.scrollTo({ y: Math.max(0, y - spacing.md), animated: true });
+  }
+
+  // Scrolls so the section's header (and, for Upcoming Rides, the search
+  // bar and Filters button under it) sits at the top of the screen.
+  function scrollToSection(sectionRef, fallbackY) {
+    Keyboard.dismiss();
+    const content = scrollViewRef.current?.getInnerViewRef?.();
+    const section = sectionRef.current;
+    if (!content || !section?.measureLayout) {
+      scrollToY(fallbackY.current);
+      return;
+    }
+    section.measureLayout(
+      content,
+      (_x, y) => scrollToY(y),
+      () => scrollToY(fallbackY.current)
+    );
   }
 
   const firstName = currentUser.name.trim().split(/\s+/)[0];
@@ -125,7 +156,7 @@ export default function HomeScreen({
         {/* Greeting + avatar (tap → Profile tab) */}
         <View style={styles.greetingRow}>
           <View style={styles.greetingText}>
-            <Text style={styles.greeting}>{getGreeting()},</Text>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
             <Text style={styles.greetingName} numberOfLines={1}>
               {firstName}
             </Text>
@@ -136,22 +167,19 @@ export default function HomeScreen({
             accessibilityLabel="Open your profile"
             hitSlop={6}
           >
-            <Avatar name={currentUser.name} role={activeMode} uri={currentUser.avatarUrl} size={46} ring />
+            <Avatar name={currentUser.name} role={activeMode} uri={currentUser.avatarUrl} size={44} />
           </Pressable>
         </View>
 
         {/* Which mode you're in, and the one-tap switch */}
         <ModeToggle activeMode={activeMode} onChange={handleSetMode} style={styles.modeToggle} />
 
-        {/* What CarpoolBoard is for */}
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Where are you headed?</Text>
-          <Text style={styles.heroText}>
-            {isDriver
-              ? 'Post where you’re going, when you’re leaving, and how many seats you have. Riders can request a seat.'
-              : 'Browse rides drivers are offering, or let drivers know you’re looking for one.'}
-          </Text>
-        </View>
+        {/* What this mode is for, in one line */}
+        <Text style={styles.heroText}>
+          {isDriver
+            ? 'Share your open seats with SMU students heading your way.'
+            : 'Find a seat on an upcoming ride, or let drivers know you need one.'}
+        </Text>
 
         {/* Main actions for this role */}
         <View style={styles.actionsRow}>
@@ -169,7 +197,7 @@ export default function HomeScreen({
                 title="Find Riders"
                 subtitle={`${riders.length} looking now`}
                 tint={colors.rider}
-                onPress={() => scrollToY(ridersSectionY.current)}
+                onPress={() => scrollToSection(ridersSectionRef, ridersSectionY)}
               />
             </>
           ) : (
@@ -177,9 +205,9 @@ export default function HomeScreen({
               <ActionTile
                 icon="search"
                 title="Find a Ride"
-                subtitle={`${drivers.length} ride${drivers.length === 1 ? '' : 's'} posted`}
+                subtitle={`${drivers.length} upcoming`}
                 filled
-                onPress={() => scrollToY(ridesSectionY.current)}
+                onPress={() => scrollToSection(ridesSectionRef, ridesSectionY)}
               />
               <ActionTile
                 icon="hand-left"
@@ -193,11 +221,11 @@ export default function HomeScreen({
         </View>
 
         {/* Available Rides: Driver offers */}
-        <View onLayout={(event) => (ridesSectionY.current = event.nativeEvent.layout.y)}>
+        <View ref={ridesSectionRef} onLayout={(event) => (ridesSectionY.current = event.nativeEvent.layout.y)}>
           <SectionHeader
-            title="Available Rides"
-            role="driver"
-            right={<Badge label={String(drivers.length)} tone="driver" />}
+            title="Upcoming Rides"
+            subtitle="Rides that haven’t departed yet"
+            right={<Badge label={String(drivers.length)} tone="primary" />}
           />
 
           {!isDriver && drivers.length > 0 && (
@@ -225,13 +253,11 @@ export default function HomeScreen({
           {boardError !== '' && <Notice message={boardError} tone="danger" />}
 
           {drivers.length === 0 && isBoardLoading ? (
-            <Card style={styles.loadingCard}>
-              <ActivityIndicator color={colors.primary} />
-              <Text style={styles.loadingText}>Loading rides…</Text>
-            </Card>
+            <LoadingState label="Loading rides…" style={styles.sectionGap} />
           ) : drivers.length === 0 && boardError !== '' ? (
             <EmptyState
               icon="cloud-offline-outline"
+              tone="danger"
               title="Rides couldn’t be loaded"
               message="Check your connection, then try again."
               actionLabel="Refresh"
@@ -241,7 +267,7 @@ export default function HomeScreen({
           ) : drivers.length === 0 ? (
             <EmptyState
               icon="car-outline"
-              title="No rides available right now"
+              title="No upcoming rides yet"
               message={
                 isDriver
                   ? 'Be the first to offer one, or pull down to refresh.'
@@ -269,6 +295,7 @@ export default function HomeScreen({
                   currentUser={currentUser}
                   activeMode={activeMode}
                   myRequestStatus={myRequestStatusByRideId[driver.id] || null}
+                  nowMs={nowMs}
                   onView={() => handleViewRideDetails(driver.id)}
                   onRequest={() => handleQuickRequest(driver.id)}
                 />
@@ -278,7 +305,7 @@ export default function HomeScreen({
         </View>
 
         {/* Riders Looking for a Ride: Rider requests */}
-        <View onLayout={(event) => (ridersSectionY.current = event.nativeEvent.layout.y)}>
+        <View ref={ridersSectionRef} onLayout={(event) => (ridersSectionY.current = event.nativeEvent.layout.y)}>
           <SectionHeader
             title="Riders Looking for a Ride"
             role="rider"
@@ -308,6 +335,47 @@ export default function HomeScreen({
             ))
           )}
         </View>
+
+        {/* Your past rides: departed rides you drove or requested, kept for
+            reference and reviews. Never bookable. */}
+        {pastRides.length > 0 && (
+          <View style={styles.pastSection}>
+            <Pressable
+              onPress={() => setShowPastRides((current) => !current)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: showPastRides }}
+              style={({ pressed }) => [styles.pastToggle, pressed && styles.pastTogglePressed]}
+            >
+              <View style={styles.pastToggleIcon}>
+                <Ionicons name="time-outline" size={18} color={colors.textMuted} />
+              </View>
+              <View style={styles.flex}>
+                <Text style={styles.pastToggleTitle}>Your past rides</Text>
+                <Text style={styles.pastToggleSubtitle}>
+                  {pastRides.length} ride{pastRides.length === 1 ? '' : 's'} · departed rides can’t be booked
+                </Text>
+              </View>
+              <Ionicons
+                name={showPastRides ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={colors.textMuted}
+              />
+            </Pressable>
+            {showPastRides &&
+              pastRides.map((ride) => (
+                <RideCard
+                  key={ride.id}
+                  ride={ride}
+                  currentUser={currentUser}
+                  activeMode={activeMode}
+                  myRequestStatus={myRequestStatusByRideId[ride.id] || null}
+                  nowMs={nowMs}
+                  onView={() => handleViewRideDetails(ride.id)}
+                  onRequest={() => {}}
+                />
+              ))}
+          </View>
+        )}
       </>
     );
   }
@@ -365,7 +433,7 @@ export default function HomeScreen({
 }
 
 // Large tappable action on the Home screen. `filled` = the role's primary
-// action (solid blue); otherwise a dark tile with a colored icon.
+// action (solid blue); otherwise a white bordered tile with a tinted icon.
 function ActionTile({ icon, title, subtitle, tint = colors.primary, filled = false, onPress }) {
   return (
     <Pressable
@@ -377,10 +445,10 @@ function ActionTile({ icon, title, subtitle, tint = colors.primary, filled = fal
         pressed && styles.tilePressed,
       ]}
     >
-      <View style={[styles.tileIcon, { backgroundColor: filled ? colors.onAccentSoft : `${tint}29` }]}>
+      <View style={[styles.tileIcon, { backgroundColor: filled ? colors.onAccentSoft : `${tint}14` }]}>
         <Ionicons name={icon} size={20} color={filled ? colors.textOnAccent : tint} />
       </View>
-      <Text style={styles.tileTitle} numberOfLines={1}>
+      <Text style={[styles.tileTitle, filled && styles.tileTitleFilled]} numberOfLines={1}>
         {title}
       </Text>
       <Text style={[styles.tileSubtitle, filled && styles.tileSubtitleFilled]} numberOfLines={1}>
@@ -400,7 +468,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: gutter,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
     paddingBottom: spacing.xxxl,
   },
 
@@ -408,39 +476,31 @@ const styles = StyleSheet.create({
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   greetingText: {
     flex: 1,
     marginRight: spacing.md,
   },
   greeting: {
-    ...typography.body,
+    ...typography.label,
     color: colors.textMuted,
   },
   greetingName: {
-    ...typography.heading,
+    ...typography.display,
     color: colors.text,
     marginTop: 2,
   },
 
-  // Hero
-  hero: {
-    marginBottom: spacing.xl,
-  },
+  // Mode + intro
   modeToggle: {
-    marginBottom: spacing.xl,
-  },
-  heroTitle: {
-    ...typography.display,
-    color: colors.text,
-    letterSpacing: -0.3,
+    marginBottom: spacing.md,
   },
   heroText: {
     ...typography.body,
     color: colors.textMuted,
     lineHeight: 21,
-    marginTop: spacing.sm,
+    marginBottom: spacing.xl,
   },
 
   // Action tiles
@@ -461,6 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadow.card,
   },
   tilePressed: {
     opacity: 0.85,
@@ -476,8 +537,10 @@ const styles = StyleSheet.create({
   },
   tileTitle: {
     ...typography.bodyStrong,
-    fontWeight: '700',
     color: colors.text,
+  },
+  tileTitleFilled: {
+    color: colors.textOnAccent,
   },
   tileSubtitle: {
     ...typography.caption,
@@ -498,15 +561,43 @@ const styles = StyleSheet.create({
   sectionGap: {
     marginBottom: spacing.xxl,
   },
-  loadingCard: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
-    marginBottom: spacing.xxl,
+
+  // Past rides
+  pastSection: {
+    marginTop: spacing.xxl,
   },
-  loadingText: {
-    ...typography.label,
+  pastToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceRaised,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  pastTogglePressed: {
+    backgroundColor: colors.surfaceSunken,
+  },
+  pastToggleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  pastToggleTitle: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+  pastToggleSubtitle: {
+    ...typography.caption,
     color: colors.textMuted,
-    marginTop: spacing.sm,
+    marginTop: 2,
   },
 
   // Match confirmation

@@ -108,7 +108,7 @@ export default function OnboardingScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Top bar: Back (after step 1), progress dots, and Skip. */}
         <View style={styles.topBar}>

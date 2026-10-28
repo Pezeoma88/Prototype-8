@@ -30,7 +30,7 @@ export default function RatingSummary({ rating, stars = false, style }) {
       {stars ? (
         <StarRating value={rating.average} size={15} />
       ) : (
-        <Ionicons name="star" size={14} color={colors.pending} />
+        <Ionicons name="star" size={14} color={colors.star} />
       )}
       <Text style={styles.average}>{rating.average.toFixed(1)}</Text>
       <Text style={styles.count}>· {reviewsLabel}</Text>

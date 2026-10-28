@@ -1,10 +1,11 @@
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from '../components/AppButton';
 import Avatar from '../components/Avatar';
 import Badge from '../components/Badge';
 import Card from '../components/Card';
 import EmptyState from '../components/EmptyState';
+import LoadingState from '../components/LoadingState';
 import ModeToggle from '../components/ModeToggle';
 import Notice from '../components/Notice';
 import ScreenHeader from '../components/ScreenHeader';
@@ -12,6 +13,7 @@ import SectionHeader from '../components/SectionHeader';
 import StarRating from '../components/StarRating';
 import { formatDeparture } from '../lib/format';
 import { getReviewEligibility } from '../lib/reviews';
+import { getPastRideLabel, isRideUpcoming, sortPastRides } from '../lib/rideStatus';
 import { colors, gutter, radius, spacing, typography } from '../theme/theme';
 
 // Requests tab: every request in one place, following the current mode.
@@ -24,6 +26,12 @@ import { colors, gutter, radius, spacing, typography } from '../theme/theme';
 // Everything shown comes from the same Supabase load as the Home board, and
 // every action is one of App.js's existing handlers, which reload the board
 // afterwards so the statuses here are always what the server holds.
+//
+// Expiration: both modes split into upcoming and past. Only rides that
+// haven't departed (lib/rideStatus.js, judged at `nowMs`) offer actions.
+// Departed rides move to a Past section as history: a pending request there
+// has Expired, an accepted one is Completed, and Rate Driver stays available.
+// Nothing is changed in Supabase; these labels come from the departure time.
 
 // The rider's sections, in display order. Denied and cancelled requests are
 // final: they can't be sent again for that ride.
@@ -34,11 +42,20 @@ const RIDER_SECTIONS = [
   { status: 'cancelled', title: 'Cancelled', tone: 'muted', badge: 'Cancelled' },
 ];
 
+// How a request on a departed ride is labeled in Past.
+const PAST_REQUEST_BADGES = {
+  pending: { label: 'Expired', tone: 'muted' },
+  accepted: { label: 'Completed', tone: 'success' },
+  denied: { label: 'Denied', tone: 'muted' },
+  cancelled: { label: 'Cancelled', tone: 'muted' },
+};
+
 export default function RequestsScreen({
   currentUser,
   activeMode,
   handleSetMode,
   drivers,
+  nowMs,
   myRequestRows,
   isBoardLoading,
   isRefreshing,
@@ -63,6 +80,11 @@ export default function RequestsScreen({
     const requests = myRequestRows
       .map((row) => ({ row, ride: drivers.find((driver) => driver.id === row.ride_id) }))
       .filter((entry) => entry.ride);
+    const upcomingRequests = requests.filter((entry) => isRideUpcoming(entry.ride, nowMs));
+    const pastRides = sortPastRides(
+      requests.filter((entry) => !isRideUpcoming(entry.ride, nowMs)).map((entry) => entry.ride)
+    );
+    const pastRequests = pastRides.map((ride) => requests.find((entry) => entry.ride === ride));
 
     if (requests.length === 0) {
       return (
@@ -76,8 +98,8 @@ export default function RequestsScreen({
       );
     }
 
-    return RIDER_SECTIONS.map((section) => {
-      const entries = requests.filter((entry) => entry.row.status === section.status);
+    const upcomingSections = RIDER_SECTIONS.map((section) => {
+      const entries = upcomingRequests.filter((entry) => entry.row.status === section.status);
       if (entries.length === 0) {
         return null;
       }
@@ -165,12 +187,84 @@ export default function RequestsScreen({
         </View>
       );
     });
+
+    return (
+      <>
+        {upcomingRequests.length === 0 ? (
+          <EmptyState
+            icon="file-tray-outline"
+            title="No upcoming requests"
+            message="Requests for rides that haven’t left yet show up here."
+            actionLabel="Browse Rides"
+            onAction={onGoHome}
+            style={styles.section}
+          />
+        ) : (
+          upcomingSections
+        )}
+
+        {pastRequests.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Past rides"
+              subtitle="Departed rides, kept for your history and reviews"
+              right={<Badge label={String(pastRequests.length)} tone="muted" />}
+            />
+            {pastRequests.map(({ row, ride }) => {
+              const badge = PAST_REQUEST_BADGES[row.status] || PAST_REQUEST_BADGES.cancelled;
+              return (
+                <Card key={row.id} style={[styles.card, styles.pastCard]}>
+                  <View style={styles.personRow}>
+                    <Avatar name={ride.name} role="driver" uri={ride.avatarUrl} size={40} />
+                    <View style={styles.personText}>
+                      <Text style={styles.personName} numberOfLines={1}>
+                        {ride.name}
+                      </Text>
+                      <Text style={styles.personSub} numberOfLines={1}>
+                        Driver
+                      </Text>
+                    </View>
+                    <Badge label={badge.label} tone={badge.tone} />
+                  </View>
+
+                  <RideFacts ride={ride} />
+
+                  {reviewsLoaded && (
+                    <ReviewPrompt
+                      eligibility={getReviewEligibility({
+                        ride,
+                        requestRow: row,
+                        myReview: myReviewByRideId[ride.id] || null,
+                        currentUserId: currentUser.id,
+                        nowMs,
+                      })}
+                      onRate={() => onOpenRide(ride.id)}
+                    />
+                  )}
+
+                  <AppButton
+                    title="View Ride"
+                    variant="secondary"
+                    size="sm"
+                    onPress={() => onOpenRide(ride.id)}
+                    style={styles.actionsSingle}
+                  />
+                </Card>
+              );
+            })}
+          </View>
+        )}
+      </>
+    );
   }
 
   function renderDriverView() {
-    const myRides = drivers.filter((driver) => driver.driverAccountId === currentUser.id);
+    const allMyRides = drivers.filter((driver) => driver.driverAccountId === currentUser.id);
+    // Only upcoming rides can still take requests or passengers.
+    const myRides = allMyRides.filter((ride) => isRideUpcoming(ride, nowMs));
+    const myPastRides = sortPastRides(allMyRides.filter((ride) => !isRideUpcoming(ride, nowMs)));
 
-    if (myRides.length === 0) {
+    if (allMyRides.length === 0) {
       return (
         <EmptyState
           icon="car-sport-outline"
@@ -284,6 +378,33 @@ export default function RequestsScreen({
             ))
           )}
         </View>
+
+        {myPastRides.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Past rides"
+              subtitle="Departed rides, kept for your history and reviews"
+              right={<Badge label={String(myPastRides.length)} tone="muted" />}
+            />
+            {myPastRides.map((ride) => (
+              <Card key={ride.id} style={[styles.card, styles.pastCard]}>
+                <RideHeading ride={ride} onOpenRide={onOpenRide} isPast />
+                <Text style={styles.pastSummary}>
+                  {ride.matchedRiders.length === 0
+                    ? 'No confirmed passengers'
+                    : `${ride.matchedRiders.length} confirmed passenger${
+                        ride.matchedRiders.length === 1 ? '' : 's'
+                      }: ${ride.matchedRiders.map((rider) => rider.name).join(', ')}`}
+                  {ride.pendingRequests.length > 0
+                    ? ` · ${ride.pendingRequests.length} request${
+                        ride.pendingRequests.length === 1 ? '' : 's'
+                      } expired`
+                    : ''}
+                </Text>
+              </Card>
+            ))}
+          </View>
+        )}
       </>
     );
   }
@@ -314,13 +435,11 @@ export default function RequestsScreen({
         {requestNotice !== '' && <Notice message={requestNotice} />}
 
         {isFirstLoad ? (
-          <Card style={styles.loadingCard}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={styles.loadingText}>Loading requests…</Text>
-          </Card>
+          <LoadingState label="Loading requests…" />
         ) : drivers.length === 0 && boardError !== '' ? (
           <EmptyState
             icon="cloud-offline-outline"
+            tone="danger"
             title="Requests couldn’t be loaded"
             message="Check your connection, then try again."
             actionLabel="Refresh"
@@ -391,18 +510,24 @@ function Fact({ icon, text, strong = false }) {
   );
 }
 
-// The ride a group of requests belongs to, in Driver mode.
-function RideHeading({ ride, onOpenRide }) {
+// The ride a group of requests belongs to, in Driver mode. A past ride
+// shows Completed/Departed instead of its seats.
+function RideHeading({ ride, onOpenRide, isPast = false }) {
+  let badge;
+  if (isPast) {
+    badge = <Badge label={getPastRideLabel(ride)} tone="muted" />;
+  } else if (ride.seats === 0) {
+    badge = <Badge label="Full" tone="danger" />;
+  } else {
+    badge = <Badge label={`${ride.seats} seat${ride.seats === 1 ? '' : 's'} left`} tone="success" />;
+  }
   return (
     <View>
       <View style={styles.headingRow}>
         <View style={styles.flex}>
           <RideFacts ride={ride} />
         </View>
-        <Badge
-          label={ride.seats === 0 ? 'Full' : `${ride.seats} seat${ride.seats === 1 ? '' : 's'} left`}
-          tone={ride.seats === 0 ? 'danger' : 'driver'}
-        />
+        {badge}
       </View>
       <AppButton
         title="View Ride"
@@ -434,13 +559,16 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
   },
-  loadingCard: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
+  pastCard: {
+    backgroundColor: colors.surfaceRaised,
   },
-  loadingText: {
+  pastSummary: {
     ...typography.label,
     color: colors.textMuted,
+    lineHeight: 19,
+    marginTop: spacing.md,
+  },
+  actionsSingle: {
     marginTop: spacing.md,
   },
   emptyText: {

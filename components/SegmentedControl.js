@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing } from '../theme/theme';
+import { colors, radius, shadow, spacing } from '../theme/theme';
 
 // Pill-style segmented control, e.g. the Available Rides sort options.
-// options: [{ key, label }]. The selected segment is filled with `tint`.
+// options: [{ key, label }]. The selected segment is a raised white pill
+// whose label is drawn in `tint`.
 export default function SegmentedControl({ options, value, onChange, tint = colors.primary, style }) {
   return (
     <View style={[styles.track, style]}>
@@ -16,11 +17,11 @@ export default function SegmentedControl({ options, value, onChange, tint = colo
             accessibilityState={{ selected: isActive }}
             style={({ pressed }) => [
               styles.segment,
-              isActive && { backgroundColor: tint },
+              isActive && styles.segmentActive,
               pressed && !isActive && styles.pressed,
             ]}
           >
-            <Text style={[styles.text, isActive && styles.textActive]} numberOfLines={1}>
+            <Text style={[styles.text, isActive && { color: tint }]} numberOfLines={1}>
               {option.label}
             </Text>
           </Pressable>
@@ -33,10 +34,8 @@ export default function SegmentedControl({ options, value, onChange, tint = colo
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceSunken,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: 3,
   },
   segment: {
@@ -46,15 +45,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     alignItems: 'center',
   },
+  segmentActive: {
+    backgroundColor: colors.surface,
+    ...shadow.card,
+    shadowOpacity: 0.08,
+  },
   pressed: {
-    backgroundColor: colors.surfaceRaised,
+    opacity: 0.6,
   },
   text: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: colors.textMuted,
-  },
-  textActive: {
-    color: colors.textOnAccent,
   },
 });

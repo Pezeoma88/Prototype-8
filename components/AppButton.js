@@ -3,14 +3,14 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors, radius, spacing } from '../theme/theme';
 
 // The one button style system for CarpoolBoard:
-//   primary     filled blue/indigo, for the main action on a screen
-//   secondary   dark outlined, for alternatives (Cancel, View Profile…)
-//   destructive red, for cancelling a ride / leaving a seat
-//   rider       filled orange, for Rider-specific primary actions
-// Disabled buttons use a muted fill regardless of variant.
+//   primary     filled blue, for the main action on a screen
+//   secondary   white with a gray border, for alternatives (Cancel, Details…)
+//   destructive soft red, for cancelling a ride / leaving a seat
+//   rider       filled teal, for Rider-specific primary actions
+// Disabled buttons use a light gray fill regardless of variant.
 const VARIANTS = {
   primary: { bg: colors.primary, pressedBg: colors.primaryPressed, text: colors.textOnAccent },
-  secondary: { bg: 'transparent', pressedBg: colors.surfaceRaised, text: colors.text, border: colors.borderStrong },
+  secondary: { bg: colors.surface, pressedBg: colors.surfaceRaised, text: colors.text, border: colors.border },
   destructive: { bg: colors.dangerSoft, pressedBg: colors.dangerPressed, text: colors.danger },
   rider: { bg: colors.rider, pressedBg: colors.riderPressed, text: colors.textOnAccent },
 };
@@ -38,7 +38,7 @@ export default function AppButton({
       style={({ pressed }) => [
         styles.base,
         size === 'sm' && styles.small,
-        { backgroundColor: isDisabled ? colors.muted : pressed ? v.pressedBg : v.bg },
+        { backgroundColor: isDisabled ? colors.surfaceSunken : pressed ? v.pressedBg : v.bg },
         v.border && !isDisabled && { borderWidth: 1, borderColor: v.border },
         pressed && !isDisabled && styles.pressed,
         style,
@@ -61,13 +61,15 @@ export default function AppButton({
 const styles = StyleSheet.create({
   base: {
     borderRadius: radius.md,
-    paddingVertical: 14,
+    minHeight: 50,
+    paddingVertical: 13,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   small: {
     borderRadius: radius.pill,
+    minHeight: 38,
     paddingVertical: spacing.sm,
     paddingHorizontal: 14,
   },
@@ -83,9 +85,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   textSmall: {
-    fontSize: 13,
+    fontSize: 14,
   },
 });

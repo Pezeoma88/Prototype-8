@@ -1,57 +1,64 @@
-// CarpoolBoard design tokens (Prototype 5).
+// CarpoolBoard design tokens (Prototype 8: light redesign).
 //
-// Every new screen/component reads its colors, spacing, radii, and type sizes
+// Every screen/component reads its colors, spacing, radii, and type sizes
 // from here instead of hard-coding values, so the look stays consistent and
 // can be tuned in one place.
+//
+// Prototype 8 moves from the dark navy look to a clean white interface:
+// white screens, white cards with thin gray borders, one blue accent, and
+// quiet gray secondary text. Driver stays blue (the primary accent); Rider
+// uses a muted teal so the two modes are still easy to tell apart.
 //
 // A few components build a translucent tint by appending a 2-digit hex alpha
 // to a color (e.g. `${colors.rider}29`), so keep accent colors as 6-digit hex.
 
 export const colors = {
-  // Surfaces, darkest to lightest
-  bg: '#0A0F1E', // app background: near-black navy
-  surface: '#121A2E', // cards
-  surfaceRaised: '#1A2440', // inputs, floating panels, pressed cards
-  border: 'rgba(255, 255, 255, 0.08)',
-  borderStrong: 'rgba(255, 255, 255, 0.14)',
+  // Surfaces
+  bg: '#FFFFFF', // app background
+  surface: '#FFFFFF', // cards (separated from the background by a border)
+  surfaceRaised: '#F8FAFC', // inputs, chips, inset boxes, pressed cards
+  surfaceSunken: '#F1F5F9', // tracks behind segmented controls
+  border: '#E5E7EB',
+  borderStrong: '#D1D5DB',
 
   // Text
-  text: '#F4F6FB',
-  textMuted: '#8E9AB5',
-  textFaint: '#5D6884',
+  text: '#111827',
+  textMuted: '#64748B',
+  textFaint: '#94A3B8', // placeholders, hints, disabled labels
   textOnAccent: '#FFFFFF',
-  textOnAccentMuted: 'rgba(255, 255, 255, 0.8)',
-  onAccentSoft: 'rgba(255, 255, 255, 0.18)', // icon chips on filled tiles
+  textOnAccentMuted: 'rgba(255, 255, 255, 0.85)',
+  onAccentSoft: 'rgba(255, 255, 255, 0.2)', // icon chips on filled tiles
 
   // Brand / actions
-  primary: '#4F7CFF',
-  primaryPressed: '#3D66E0',
-  primarySoft: 'rgba(79, 124, 255, 0.16)',
-  accent: '#7C5CFF', // indigo/purple, used sparingly (e.g. gradient end)
+  primary: '#2563EB',
+  primaryPressed: '#1D4ED8',
+  primarySoft: '#EFF6FF',
+  accent: '#2563EB',
 
   // Role identity
-  driver: '#4F7CFF',
-  driverSoft: 'rgba(79, 124, 255, 0.16)',
-  rider: '#FF8A3D',
-  riderSoft: 'rgba(255, 138, 61, 0.16)',
-  riderPressed: '#E8742A',
-  riderBorder: 'rgba(255, 138, 61, 0.22)',
+  driver: '#2563EB',
+  driverSoft: '#EFF6FF',
+  rider: '#0D9488',
+  riderSoft: '#F0FDFA',
+  riderPressed: '#0F766E',
+  riderBorder: '#99F6E4',
 
-  // Status
-  success: '#22C55E',
-  successSoft: 'rgba(34, 197, 94, 0.16)',
-  pending: '#F5A524',
-  pendingSoft: 'rgba(245, 165, 36, 0.16)',
-  danger: '#EF4444',
-  dangerSoft: 'rgba(239, 68, 68, 0.16)',
-  dangerPressed: 'rgba(239, 68, 68, 0.26)',
-  muted: '#3A4560',
-  mutedSoft: 'rgba(142, 154, 181, 0.14)',
+  // Status (text-safe shades for use on white and on their soft fills)
+  success: '#16A34A',
+  successSoft: '#F0FDF4',
+  pending: '#B45309',
+  pendingSoft: '#FFFBEB',
+  danger: '#DC2626',
+  dangerSoft: '#FEF2F2',
+  dangerPressed: '#FEE2E2',
+  muted: '#E5E7EB', // disabled button fill
+  star: '#F59E0B', // rating stars
+  mutedSoft: '#F1F5F9',
 };
 
 // Two-stop gradient for the occasional highlight (not for every surface).
 export const gradients = {
-  primary: [colors.primary, colors.accent],
+  primary: [colors.primary, colors.primaryPressed],
 };
 
 export const spacing = {
@@ -69,9 +76,9 @@ export const gutter = spacing.xl;
 
 export const radius = {
   sm: 10,
-  md: 14,
-  lg: 20,
-  xl: 28,
+  md: 12,
+  lg: 16,
+  xl: 24,
   pill: 999,
 };
 
@@ -80,18 +87,25 @@ export const typography = {
   label: { fontSize: 13, fontWeight: '600' },
   body: { fontSize: 15, fontWeight: '400' },
   bodyStrong: { fontSize: 15, fontWeight: '600' },
-  title: { fontSize: 17, fontWeight: '700' },
-  heading: { fontSize: 22, fontWeight: '800' },
-  display: { fontSize: 28, fontWeight: '800' },
+  title: { fontSize: 17, fontWeight: '600' },
+  heading: { fontSize: 22, fontWeight: '700', letterSpacing: -0.2 },
+  display: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5 },
 };
 
-// Soft shadow for raised surfaces. iOS uses the shadow* props; Android uses
-// elevation.
+// Very soft shadow for cards on white. iOS uses the shadow* props; Android
+// uses elevation. The border does most of the separation work.
 export const shadow = {
   card: {
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  raised: {
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
   },
