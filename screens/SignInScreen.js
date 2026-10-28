@@ -6,7 +6,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -36,7 +35,7 @@ import {
   verifySignUpCode,
 } from '../lib/auth';
 import { normalizeEmail } from '../lib/format';
-import { colors, gutter, radius, roleColor, roleSoftColor, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, radius, roleColor, roleSoftColor, spacing, statusBarStyle, typography } from '../theme/theme';
 
 const ROLE_OPTIONS = [
   { key: 'driver', title: 'Driver', description: 'Offer seats in your car', icon: 'car-sport' },
@@ -309,7 +308,7 @@ export default function SignInScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar style="dark" />
+      <StatusBar style={statusBarStyle()} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -585,7 +584,7 @@ export default function SignInScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   safe: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -697,4 +696,4 @@ const styles = StyleSheet.create({
   footerSecondLine: {
     marginTop: spacing.lg,
   },
-});
+}));

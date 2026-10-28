@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from './AppButton';
 import Card from './Card';
 import InfoRow from './InfoRow';
 import { formatDeparture } from '../lib/format';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // "Ride posted" screen shown after Supabase confirms a ride was saved
 // (styled like the Ride Matched card on Home). `ride` is
@@ -55,7 +55,7 @@ export default function RidePostedCard({ ride, onBackToHome, onEdit }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     alignItems: 'center',
     paddingVertical: spacing.xxl,
@@ -91,4 +91,4 @@ const styles = StyleSheet.create({
   primary: {
     marginBottom: spacing.sm,
   },
-});
+}));

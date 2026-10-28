@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, shadow, spacing } from '../theme/theme';
+import { Pressable, Text, View } from 'react-native';
+import { colors, createThemedStyles, radius, shadow, spacing } from '../theme/theme';
 
 // Pill-style segmented control, e.g. the Available Rides sort options.
 // options: [{ key, label }]. The selected segment is a raised white pill
@@ -31,7 +31,7 @@ export default function SegmentedControl({ options, value, onChange, tint = colo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   track: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceSunken,
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textMuted,
   },
-});
+}));

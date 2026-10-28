@@ -7,7 +7,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -19,15 +18,33 @@ import Notice from '../components/Notice';
 import ProfilePhotoField from '../components/ProfilePhotoField';
 import TextField from '../components/TextField';
 import { BIO_MAX_LENGTH, NAME_MAX_LENGTH, VEHICLE_MAX_LENGTH } from '../lib/format';
-import { colors, gutter, radius, roleColor, roleSoftColor, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, radius, roleColor, roleSoftColor, spacing, statusBarStyle, typography } from '../theme/theme';
 
 const STEP_COUNT = 3;
 
+// The welcome step's feature list: the three main actions, then two notes.
+// `role` tints the icon (driver blue / rider teal); notes stay neutral.
 const HIGHLIGHTS = [
-  { icon: 'car-sport-outline', text: 'Drivers post rides with their open seats.' },
-  { icon: 'hand-left-outline', text: 'Riders request a seat, and the driver accepts or declines.' },
+  {
+    icon: 'search',
+    role: 'driver',
+    title: 'Find a Ride',
+    text: 'Search upcoming rides by destination, date, and seats, then request a seat.',
+  },
+  {
+    icon: 'add-circle-outline',
+    role: 'driver',
+    title: 'Offer a Ride',
+    text: 'Driving somewhere? Post your open seats and accept or decline requests.',
+  },
+  {
+    icon: 'hand-left-outline',
+    role: 'rider',
+    title: 'Need a Ride?',
+    text: 'No ride that fits? Join the list so drivers know you’re looking.',
+  },
   { icon: 'location-outline', text: 'Pickups are at public SMU landmarks, never home addresses.' },
-  { icon: 'star-outline', text: 'Riders can rate their driver once a ride has left.' },
+  { icon: 'star-outline', text: 'Rate your driver once a ride has left.' },
 ];
 
 const MODE_OPTIONS = [
@@ -47,8 +64,9 @@ const MODE_OPTIONS = [
   },
 ];
 
-// First-time onboarding, shown right after a sign-in that created a new
-// profile, and again whenever someone opens "App intro" from Profile.
+// First-time onboarding, shown after a new account's first sign-in (until
+// it's finished or skipped), and again whenever someone opens "App intro"
+// from Profile.
 // Three steps: welcome, choose a starting mode, and an optional profile
 // setup that reuses Edit Profile's form state and App's handleSaveProfile
 // (so the same validation, photo upload, and update-by-id apply, and the
@@ -80,7 +98,7 @@ export default function OnboardingScreen({
     AccessibilityInfo.announceForAccessibility(`Step ${step + 1} of ${STEP_COUNT}`);
   }, [step]);
 
-  // Only save when something actually changed, so tapping Get Started on an
+  // Only save when something actually changed, so tapping Finish on an
   // untouched form doesn't rewrite the profile or show "Profile saved".
   const hasProfileChanges =
     profilePhotoDraft !== null ||
@@ -108,7 +126,7 @@ export default function OnboardingScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar style="dark" />
+      <StatusBar style={statusBarStyle()} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Top bar: Back (after step 1), progress dots, and Skip. */}
         <View style={styles.topBar}>
@@ -176,10 +194,22 @@ export default function OnboardingScreen({
               <View style={styles.highlights}>
                 {HIGHLIGHTS.map((item) => (
                   <View key={item.icon} style={styles.highlight}>
-                    <View style={styles.highlightIcon}>
-                      <Ionicons name={item.icon} size={18} color={colors.primary} />
+                    <View
+                      style={[
+                        styles.highlightIcon,
+                        { backgroundColor: item.role ? roleSoftColor(item.role) : colors.surfaceRaised },
+                      ]}
+                    >
+                      <Ionicons
+                        name={item.icon}
+                        size={18}
+                        color={item.role ? roleColor(item.role) : colors.textMuted}
+                      />
                     </View>
-                    <Text style={styles.highlightText}>{item.text}</Text>
+                    <View style={styles.flex}>
+                      {item.title && <Text style={styles.highlightTitle}>{item.title}</Text>}
+                      <Text style={styles.highlightText}>{item.text}</Text>
+                    </View>
                   </View>
                 ))}
               </View>
@@ -259,7 +289,7 @@ export default function OnboardingScreen({
                 isSavingProfile={isSavingProfile}
                 handlePickProfilePhoto={handlePickProfilePhoto}
                 handleDiscardProfilePhoto={handleDiscardProfilePhoto}
-                saveLabel="Get Started"
+                saveLabel="Finish"
               />
 
               <FormSection title="About you" icon="person-circle-outline" tint={tint}>
@@ -316,7 +346,7 @@ export default function OnboardingScreen({
         <View style={styles.footer}>
           {step < STEP_COUNT - 1 ? (
             <AppButton
-              title={step === 0 ? 'Next' : `Continue as ${mode === 'driver' ? 'Driver' : 'Rider'}`}
+              title={step === 0 ? 'Get Started' : `Continue as ${mode === 'driver' ? 'Driver' : 'Rider'}`}
               icon="arrow-forward"
               variant={step === 1 && mode === 'rider' ? 'rider' : 'primary'}
               onPress={() => goTo(step + 1)}
@@ -324,7 +354,7 @@ export default function OnboardingScreen({
           ) : (
             <>
               <AppButton
-                title="Get Started"
+                title="Finish"
                 icon="arrow-forward"
                 variant={mode === 'rider' ? 'rider' : 'primary'}
                 onPress={handleGetStarted}
@@ -345,7 +375,7 @@ export default function OnboardingScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   safe: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -436,10 +466,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
+  highlightTitle: {
+    ...typography.bodyStrong,
+    color: colors.text,
+    marginBottom: 2,
+  },
   highlightText: {
     ...typography.body,
-    color: colors.text,
-    flex: 1,
+    color: colors.textMuted,
     lineHeight: 20,
   },
   modeTile: {
@@ -507,4 +541,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-});
+}));

@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, typography } from '../theme/theme';
+import { Text, View } from 'react-native';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // Vertical pickup → destination route: a hollow dot for the start, a short
 // connector line, and a filled dot for the end.
@@ -56,7 +56,7 @@ export default function RouteLine({ pickup, destination, tint = colors.primary, 
 
 const DOT = 12;
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
   },
@@ -104,4 +104,4 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 1,
   },
-});
+}));

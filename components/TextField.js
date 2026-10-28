@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, radius, spacing, typography } from '../theme/theme';
 
 // Labeled, rounded white input with an optional leading icon, trailing
 // accessory (`right`, e.g. a show/hide password button), hint, and
@@ -35,7 +35,7 @@ export default function TextField({ label, icon, right, hint, error, multiline, 
           style={[styles.input, multiline && styles.inputMultiline]}
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.primary}
-          keyboardAppearance="light"
+          keyboardAppearance={getColorScheme()}
           onFocus={(event) => {
             setIsFocused(true);
             onFocus?.(event);
@@ -52,7 +52,7 @@ export default function TextField({ label, icon, right, hint, error, multiline, 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     marginBottom: spacing.lg,
   },
@@ -109,4 +109,4 @@ const styles = StyleSheet.create({
     color: colors.danger,
     marginTop: 6,
   },
-});
+}));

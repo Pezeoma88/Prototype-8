@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import TextField from './TextField';
 import SegmentedControl from './SegmentedControl';
 import { RIDER_SORT_OPTIONS, SEAT_FILTER_OPTIONS, countPanelFilters, hasActiveRideFilters } from '../lib/rideFilters';
 import { formatDepartureDate } from '../lib/format';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, radius, spacing, typography } from '../theme/theme';
 
 // Rider-mode search and filters above Available Rides: a destination search
 // field that filters as you type, a Filters button that opens departure
@@ -138,7 +138,7 @@ export default function RideFilterPanel({ filters, onChange, onClear, resultCoun
                 value={filters.date || startOfToday()}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                themeVariant="light"
+                themeVariant={getColorScheme()}
                 textColor={colors.text}
                 locale="en-US"
                 onValueChange={(event, date) => handleDatePicked(date)}
@@ -186,7 +186,7 @@ function startOfToday() {
   return today;
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,4 +317,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
   },
-});
+}));

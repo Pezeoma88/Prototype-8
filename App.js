@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Keyboard, Linking, Platform, StyleSheet, View } from 'react-native';
+import { Alert, Keyboard, Linking, Platform, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from './lib/supabase';
 import {
@@ -42,7 +42,8 @@ import {
   sortPastRides,
 } from './lib/rideStatus';
 import { useNow } from './lib/useNow';
-import { colors, gutter } from './theme/theme';
+import { getIntroStatus, loadSavedColorScheme, saveColorScheme, setIntroStatus } from './lib/preferences';
+import { applyColorScheme, colors, createThemedStyles, getColorScheme, gutter, statusBarStyle } from './theme/theme';
 import TabBar from './components/TabBar';
 import Toast from './components/Toast';
 import LoadingState from './components/LoadingState';
@@ -64,6 +65,10 @@ import OnboardingScreen from './screens/OnboardingScreen';
 // screens live in screens/, shared UI in components/, and design tokens in
 // theme/theme.js. All app state and Supabase logic stay here in App.js and
 // are passed down to the screens as props.
+
+// The saved Light/Dark setting is applied before anything renders, so the
+// first screen (sign-in or the board) already uses it.
+applyColorScheme(loadSavedColorScheme());
 
 // This is the home screen for CarpoolBoard.
 // Drivers can be added (with a name and seat count), riders can ask for a ride,
@@ -144,10 +149,15 @@ export default function App() {
   // profile id, its rides/requests, and activeMode never change.
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   // Whether the full-screen onboarding is showing (see startOnboarding).
-  // Session-only like activeMode: it opens automatically only right after a
-  // sign-in that created a new profile, so returning users never see it
-  // unless they choose "App intro" in Profile.
+  // It opens automatically for a new account (including right after email
+  // verification) until that account finishes or skips it; that's
+  // remembered on this phone (lib/preferences.js), so returning users go
+  // straight to Home unless they choose "App intro" in Profile.
   const [isOnboarding, setIsOnboarding] = useState(false);
+  // The Light/Dark setting ('light' or 'dark'), saved on this phone and
+  // changed from Profile › Appearance. theme/theme.js holds the active
+  // palette; this state only exists so switching re-renders every screen.
+  const [colorScheme, setColorScheme] = useState(getColorScheme);
   const [profileNameInput, setProfileNameInput] = useState('');
   const [profileBioInput, setProfileBioInput] = useState('');
   const [profileVehicleInput, setProfileVehicleInput] = useState('');
@@ -520,6 +530,10 @@ export default function App() {
         return;
       }
       const account = profileToAccount(data, authUser.email);
+      // 'pending' means a new account hasn't finished the intro yet (e.g.
+      // the app was closed partway), so it opens again on any sign-in.
+      const introStatus = await getIntroStatus(account.id);
+      if (isStale) return;
       currentUserIdRef.current = account.id;
       setAuthNotice('');
       setCurrentUser(account);
@@ -528,7 +542,12 @@ export default function App() {
       // A sign-in typed this launch uses the toggle; a restored session
       // starts in the account's sign-up role.
       setActiveMode(signInKind === null ? account.legacyRole || 'rider' : authRole);
-      if (signInKind === true) {
+      // New accounts (including right after email verification) see the
+      // intro until they finish or skip it; returning users go to Home.
+      if ((signInKind === true && introStatus !== 'done') || introStatus === 'pending') {
+        if (introStatus !== 'pending') {
+          setIntroStatus(account.id, 'pending');
+        }
         startOnboarding(account);
       }
       setIsBoardLoading(true);
@@ -680,9 +699,23 @@ export default function App() {
       resetProfileForm();
     }
     setIsOnboarding(false);
+    if (currentUser) {
+      setIntroStatus(currentUser.id, 'done');
+    }
     handleLeaveRequestSubmission();
     setActiveTab('home');
     handleSetMode(mode);
+  }
+
+  // Profile › Appearance: switches Light/Dark right away and remembers it on
+  // this phone for the next launch.
+  function handleSetColorScheme(scheme) {
+    if (scheme === colorScheme) {
+      return;
+    }
+    applyColorScheme(scheme);
+    setColorScheme(getColorScheme());
+    saveColorScheme(scheme);
   }
 
   // Opens Edit Profile with the current saved values filled in.
@@ -2013,7 +2046,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <SafeAreaView style={appStyles.launch}>
-          <StatusBar style="dark" />
+          <StatusBar style={statusBarStyle()} />
           {profileLoadFailed ? (
             <>
               <Notice message="Couldn't load your account. Check your connection and try again." tone="danger" />
@@ -2167,7 +2200,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={appStyles.shell}>
-        <StatusBar style="dark" />
+        <StatusBar style={statusBarStyle()} />
 
         <View style={appStyles.screen}>
           {activeTab === 'home' ? (
@@ -2270,6 +2303,8 @@ export default function App() {
                     handleSetMode={handleSetMode}
                     handleStartEditProfile={handleStartEditProfile}
                     handleOpenOnboarding={handleOpenOnboarding}
+                    colorScheme={colorScheme}
+                    handleSetColorScheme={handleSetColorScheme}
                     handleSignOut={handleSignOut}
                     myDriverRating={myDriverRating}
                     myDriverReviews={myDriverReviews}
@@ -2291,7 +2326,7 @@ export default function App() {
   );
 }
 
-const appStyles = StyleSheet.create({
+const appStyles = createThemedStyles(() => ({
   shell: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -2312,4 +2347,4 @@ const appStyles = StyleSheet.create({
   launchButton: {
     marginTop: 12,
   },
-});
+}));

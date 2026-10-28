@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors } from '../theme/theme';
+import { colors, createThemedStyles } from '../theme/theme';
 
 // One to five stars.
 //   Display:  <StarRating value={4.3} />  — rounded to the nearest half star.
@@ -59,7 +59,7 @@ export default function StarRating({ value = 0, onChange, size = 16, disabled = 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.6,
   },
-});
+}));

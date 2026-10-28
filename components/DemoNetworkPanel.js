@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Badge from './Badge';
 import FormSection from './FormSection';
@@ -8,7 +8,7 @@ import {
   setDemoNetworkMode,
   useDemoNetworkMode,
 } from '../lib/demoNetwork';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // DEVELOPMENT-ONLY controls for lib/demoNetwork.js. Both components render
 // nothing outside development (`npx expo start`), so they never appear in a
@@ -105,7 +105,7 @@ export function DemoNetworkBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   intro: {
     ...typography.caption,
     color: colors.textMuted,
@@ -178,4 +178,4 @@ const styles = StyleSheet.create({
     color: colors.textOnAccent,
     marginLeft: 6,
   },
-});
+}));

@@ -1,17 +1,21 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // Inline message banner (e.g. "Your request is now Pending", or a load
 // error). `tone` picks the accent: info (blue), warning (amber), danger (red).
-const TONES = {
-  info: { icon: 'information-circle', color: colors.primary, bg: colors.primarySoft },
-  warning: { icon: 'alert-circle', color: colors.pending, bg: colors.pendingSoft },
-  danger: { icon: 'close-circle', color: colors.danger, bg: colors.dangerSoft },
-};
+// Built per render so the colors follow the Light/Dark setting.
+function getTones() {
+  return {
+    info: { icon: 'information-circle', color: colors.primary, bg: colors.primarySoft },
+    warning: { icon: 'alert-circle', color: colors.pending, bg: colors.pendingSoft },
+    danger: { icon: 'close-circle', color: colors.danger, bg: colors.dangerSoft },
+  };
+}
 
 export default function Notice({ message, tone = 'info', style }) {
-  const t = TONES[tone] || TONES.info;
+  const tones = getTones();
+  const t = tones[tone] || tones.info;
   return (
     <View style={[styles.box, { backgroundColor: t.bg, borderColor: `${t.color}40` }, style]}>
       <Ionicons name={t.icon} size={18} color={t.color} style={styles.icon} />
@@ -20,7 +24,7 @@ export default function Notice({ message, tone = 'info', style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   box: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -40,4 +44,4 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 19,
   },
-});
+}));

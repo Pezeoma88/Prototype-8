@@ -1,8 +1,8 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import AppButton from './AppButton';
 import FormSection from './FormSection';
 import { DemoNetworkWaitingNote } from './DemoNetworkPanel';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // Shows where a Submit Ride Request stands, on the ride it was sent to.
 // `submission` is App's requestSubmission state; its `phase` is one of:
@@ -197,7 +197,7 @@ function describe(submission, driverName) {
   }
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   block: {
     marginBottom: spacing.xl,
   },
@@ -226,4 +226,4 @@ const styles = StyleSheet.create({
   buttonGap: {
     marginBottom: spacing.sm,
   },
-});
+}));

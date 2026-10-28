@@ -1,4 +1,4 @@
-import { Keyboard, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 import Avatar from '../components/Avatar';
 import Badge from '../components/Badge';
 import Card from '../components/Card';
@@ -16,7 +16,7 @@ import RouteLine from '../components/RouteLine';
 import SectionHeader from '../components/SectionHeader';
 import TextField from '../components/TextField';
 import { getPastRideLabel } from '../lib/rideStatus';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // Ride Details: shown after selecting a ride from Available Rides. Shows
 // pending requests (with Accept/Deny for the ride's driver), confirmed
@@ -408,7 +408,7 @@ export default function RideDetailsScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   block: {
     marginBottom: spacing.xl,
   },
@@ -519,4 +519,4 @@ const styles = StyleSheet.create({
   ownerActions: {
     marginTop: spacing.xs,
   },
-});
+}));

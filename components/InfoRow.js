@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // One label/value line inside a details card, with an optional icon. Pass
 // `right` instead of `value` to show a badge or button on the right side.
@@ -22,7 +22,7 @@ export default function InfoRow({ icon, label, value, right, muted = false, divi
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -50,4 +50,4 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     fontWeight: '500',
   },
-});
+}));

@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, radius, shadow, spacing } from '../theme/theme';
+import { Pressable, View } from 'react-native';
+import { colors, createThemedStyles, radius, shadow, spacing } from '../theme/theme';
 
 // White card with a thin gray border and a very soft shadow. Pass onPress to
 // make the whole card tappable (it tints slightly while pressed).
@@ -18,7 +18,7 @@ export default function Card({ children, onPress, style }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -30,4 +30,4 @@ const styles = StyleSheet.create({
   pressed: {
     backgroundColor: colors.surfaceRaised,
   },
-});
+}));

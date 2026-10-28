@@ -1,6 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, spacing } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing } from '../theme/theme';
 
 // The one button style system for CarpoolBoard:
 //   primary     filled blue, for the main action on a screen
@@ -8,12 +8,15 @@ import { colors, radius, spacing } from '../theme/theme';
 //   destructive soft red, for cancelling a ride / leaving a seat
 //   rider       filled teal, for Rider-specific primary actions
 // Disabled buttons use a light gray fill regardless of variant.
-const VARIANTS = {
-  primary: { bg: colors.primary, pressedBg: colors.primaryPressed, text: colors.textOnAccent },
-  secondary: { bg: colors.surface, pressedBg: colors.surfaceRaised, text: colors.text, border: colors.border },
-  destructive: { bg: colors.dangerSoft, pressedBg: colors.dangerPressed, text: colors.danger },
-  rider: { bg: colors.rider, pressedBg: colors.riderPressed, text: colors.textOnAccent },
-};
+// Built per render so the colors follow the Light/Dark setting.
+function getVariants() {
+  return {
+    primary: { bg: colors.primary, pressedBg: colors.primaryPressed, text: colors.textOnAccent },
+    secondary: { bg: colors.surface, pressedBg: colors.surfaceRaised, text: colors.text, border: colors.border },
+    destructive: { bg: colors.dangerSoft, pressedBg: colors.dangerPressed, text: colors.danger },
+    rider: { bg: colors.rider, pressedBg: colors.riderPressed, text: colors.textOnAccent },
+  };
+}
 
 export default function AppButton({
   title,
@@ -25,7 +28,8 @@ export default function AppButton({
   size = 'md',
   style,
 }) {
-  const v = VARIANTS[variant] || VARIANTS.primary;
+  const variants = getVariants();
+  const v = variants[variant] || variants.primary;
   const isDisabled = disabled || loading;
   const textColor = isDisabled ? colors.textFaint : v.text;
 
@@ -58,7 +62,7 @@ export default function AppButton({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   base: {
     borderRadius: radius.md,
     minHeight: 50,
@@ -90,4 +94,4 @@ const styles = StyleSheet.create({
   textSmall: {
     fontSize: 14,
   },
-});
+}));

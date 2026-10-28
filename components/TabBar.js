@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, spacing } from '../theme/theme';
+import { colors, createThemedStyles, spacing } from '../theme/theme';
 
 // The four main sections of CarpoolBoard, in tab-bar order.
 export const TABS = [
@@ -56,7 +56,7 @@ export default function TabBar({ activeTab, onTabPress, badges = {} }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   bar: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
@@ -108,4 +108,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textOnAccent,
   },
-});
+}));

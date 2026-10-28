@@ -1,19 +1,22 @@
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, shadow, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, shadow, spacing, typography } from '../theme/theme';
 
 // How long a toast stays on screen before fading out.
 const VISIBLE_MS = 3000;
 const FADE_MS = 200;
 
-const TONES = {
-  success: { icon: 'checkmark-circle', color: colors.success, bg: colors.successSoft },
-  info: { icon: 'information-circle', color: colors.primary, bg: colors.primarySoft },
-  // Mode switches, in the role's own color.
-  driver: { icon: 'car-sport', color: colors.driver, bg: colors.driverSoft },
-  rider: { icon: 'walk', color: colors.rider, bg: colors.riderSoft },
-};
+// Built per render so the colors follow the Light/Dark setting.
+function getTones() {
+  return {
+    success: { icon: 'checkmark-circle', color: colors.success, bg: colors.successSoft },
+    info: { icon: 'information-circle', color: colors.primary, bg: colors.primarySoft },
+    // Mode switches, in the role's own color.
+    driver: { icon: 'car-sport', color: colors.driver, bg: colors.driverSoft },
+    rider: { icon: 'walk', color: colors.rider, bg: colors.riderSoft },
+  };
+}
 
 // Short floating confirmation (e.g. "Profile saved") that fades in near the
 // bottom of the screen and hides itself after a few seconds, or when tapped.
@@ -53,7 +56,8 @@ export default function Toast({ toast, onHide }) {
     return null;
   }
 
-  const t = TONES[toast.tone] || TONES.success;
+  const tones = getTones();
+  const t = tones[toast.tone] || tones.success;
   const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [12, 0] });
 
   return (
@@ -81,7 +85,7 @@ export default function Toast({ toast, onHide }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     position: 'absolute',
     left: spacing.lg,
@@ -119,4 +123,4 @@ const styles = StyleSheet.create({
     marginTop: 2,
     lineHeight: 17,
   },
-});
+}));

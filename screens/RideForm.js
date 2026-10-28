@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Keyboard, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Linking, Platform, Pressable, Text, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from '../components/AppButton';
@@ -18,7 +18,7 @@ import {
 import { locateNearestPickup } from '../lib/currentLocation';
 import { DESTINATION_LOCATIONS } from '../lib/destinationLocations';
 import { PICKUP_LOCATIONS, isSamePickup, isValidCoordinate } from '../lib/pickupLocations';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, radius, spacing, typography } from '../theme/theme';
 
 // The destination preset whose name matches the typed destination, if any.
 function findDestinationPreset(text) {
@@ -382,7 +382,7 @@ export default function RideForm({
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={departurePickerMinimumDate}
               minuteInterval={DEPARTURE_MINUTE_INTERVAL}
-              themeVariant="light"
+              themeVariant={getColorScheme()}
               textColor={colors.text}
               locale="en-US"
               onValueChange={(event, date) => handleDeparturePicked(date)}
@@ -522,7 +522,7 @@ function SpotPicker({ value, presets, emptyLabel, onPick }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   mapField: {
     marginTop: spacing.md,
   },
@@ -694,4 +694,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },
-});
+}));

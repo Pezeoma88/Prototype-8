@@ -1,18 +1,28 @@
-// CarpoolBoard design tokens (Prototype 8: light redesign).
+import { StyleSheet } from 'react-native';
+
+// CarpoolBoard design tokens (Prototype 8: light redesign + dark mode).
 //
 // Every screen/component reads its colors, spacing, radii, and type sizes
 // from here instead of hard-coding values, so the look stays consistent and
 // can be tuned in one place.
 //
-// Prototype 8 moves from the dark navy look to a clean white interface:
-// white screens, white cards with thin gray borders, one blue accent, and
-// quiet gray secondary text. Driver stays blue (the primary accent); Rider
-// uses a muted teal so the two modes are still easy to tell apart.
+// Light (the default) is a clean white interface: white screens, white cards
+// with thin gray borders, one blue accent, and quiet gray secondary text.
+// Driver stays blue (the primary accent); Rider uses a muted teal so the two
+// modes are still easy to tell apart. Dark brings back the navy look of the
+// earlier prototypes with the same layout.
 //
 // A few components build a translucent tint by appending a 2-digit hex alpha
 // to a color (e.g. `${colors.rider}29`), so keep accent colors as 6-digit hex.
+//
+// How switching works: `colors` is one shared object whose values are
+// swapped in place by applyColorScheme. Anything read during render (inline
+// `colors.x`, roleColor, tone maps built in a function) picks up the new
+// values on the next render, and createThemedStyles rebuilds each file's
+// style sheet the first time it's used after a switch. App re-renders the
+// whole tree when the scheme changes, so nothing needs a restart.
 
-export const colors = {
+const lightColors = {
   // Surfaces
   bg: '#FFFFFF', // app background
   surface: '#FFFFFF', // cards (separated from the background by a border)
@@ -55,6 +65,103 @@ export const colors = {
   star: '#F59E0B', // rating stars
   mutedSoft: '#F1F5F9',
 };
+
+// Dark: deep navy backgrounds, slightly lighter navy cards, light text, and
+// brighter blue/teal accents that stay readable on navy. The soft fills are
+// opaque dark tints rather than pastel, so badges and notices don't glare.
+const darkColors = {
+  // Surfaces
+  bg: '#0F172A',
+  surface: '#16213E',
+  surfaceRaised: '#1E2B4D',
+  surfaceSunken: '#0B1222',
+  border: '#2A3A5E',
+  borderStrong: '#3B4D75',
+
+  // Text
+  text: '#F1F5F9',
+  textMuted: '#A5B4CB',
+  textFaint: '#7A8AA6',
+  textOnAccent: '#FFFFFF',
+  textOnAccentMuted: 'rgba(255, 255, 255, 0.85)',
+  onAccentSoft: 'rgba(255, 255, 255, 0.2)',
+
+  // Brand / actions
+  primary: '#3B82F6',
+  primaryPressed: '#2563EB',
+  primarySoft: '#172B55',
+  accent: '#3B82F6',
+
+  // Role identity
+  driver: '#3B82F6',
+  driverSoft: '#172B55',
+  rider: '#10A090',
+  riderSoft: '#123A45',
+  riderPressed: '#0D857A',
+  riderBorder: '#1C6B66',
+
+  // Status
+  success: '#4ADE80',
+  successSoft: '#123726',
+  pending: '#FBBF24',
+  pendingSoft: '#3A2F12',
+  danger: '#F87171',
+  dangerSoft: '#3D1C2A',
+  dangerPressed: '#4A2233',
+  muted: '#2A3A5E',
+  star: '#FBBF24',
+  mutedSoft: '#1E2B4D',
+};
+
+const PALETTES = { light: lightColors, dark: darkColors };
+
+// The active palette. Its values change in place (see applyColorScheme), so
+// always read `colors.x` at render time rather than copying it at load.
+export const colors = { ...lightColors };
+
+let colorScheme = 'light';
+// Bumped on every switch so themed style sheets know to rebuild.
+let schemeVersion = 0;
+
+// 'light' or 'dark'. Also usable directly as a keyboardAppearance,
+// DateTimePicker themeVariant, or MapView userInterfaceStyle.
+export function getColorScheme() {
+  return colorScheme;
+}
+
+// expo-status-bar style with readable icons on the active background.
+export function statusBarStyle() {
+  return colorScheme === 'dark' ? 'light' : 'dark';
+}
+
+// Switches the shared palette to 'light' or 'dark' (anything else is light).
+// Callers re-render afterwards; App does this from its colorScheme state.
+export function applyColorScheme(scheme) {
+  const next = scheme === 'dark' ? 'dark' : 'light';
+  if (next === colorScheme) {
+    return;
+  }
+  colorScheme = next;
+  schemeVersion += 1;
+  Object.assign(colors, PALETTES[next]);
+  gradients.primary = [colors.primary, colors.primaryPressed];
+}
+
+// A StyleSheet whose colors follow the active scheme. Use it like
+// StyleSheet.create, but pass a function: `createThemedStyles(() => ({...}))`.
+// The sheet is built on first use and again after each scheme switch.
+export function createThemedStyles(build) {
+  let sheet = null;
+  let builtFor = -1;
+  function current() {
+    if (builtFor !== schemeVersion) {
+      sheet = StyleSheet.create(build());
+      builtFor = schemeVersion;
+    }
+    return sheet;
+  }
+  return new Proxy({}, { get: (_target, key) => current()[key] });
+}
 
 // Two-stop gradient for the occasional highlight (not for every surface).
 export const gradients = {

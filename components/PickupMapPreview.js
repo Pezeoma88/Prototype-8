@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { isValidCoordinate, pickupKey } from '../lib/pickupLocations';
-import { colors, radius, spacing } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, radius, spacing } from '../theme/theme';
 
 // How much of the map shows around the pickup: the landmark and the
 // buildings right around it.
@@ -40,7 +40,7 @@ export default function PickupMapPreview({ pickup, style }) {
         style={StyleSheet.absoluteFill}
         initialRegion={region}
         onMapReady={() => mapRef.current?.animateToRegion(region, 0)}
-        userInterfaceStyle="light"
+        userInterfaceStyle={getColorScheme()}
         showsUserLocation={false}
         toolbarEnabled={false}
         scrollEnabled={false}
@@ -54,7 +54,7 @@ export default function PickupMapPreview({ pickup, style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     height: 160,
     marginTop: spacing.md,
@@ -64,4 +64,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-});
+}));

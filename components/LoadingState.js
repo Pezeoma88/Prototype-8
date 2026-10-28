@@ -1,5 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // The one loading placeholder used while a screen's first load is running
 // (e.g. "Loading rides…"). Same footprint as EmptyState, so the layout
@@ -13,7 +13,7 @@ export default function LoadingState({ label = 'Loading…', style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     alignItems: 'center',
     paddingVertical: spacing.xxl + spacing.xs,
@@ -27,4 +27,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.sm,
   },
-});
+}));

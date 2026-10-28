@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { colors, roleColor } from '../theme/theme';
+import { Image, Text, View } from 'react-native';
+import { colors, createThemedStyles, roleColor } from '../theme/theme';
 import { getInitial } from '../lib/format';
 
 // Circular avatar. Shows the person's profile photo when `uri` is set;
@@ -42,7 +42,7 @@ export default function Avatar({ name, role = 'driver', uri, size = 44, ring = f
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   image: {
     backgroundColor: colors.surfaceRaised,
   },
@@ -59,4 +59,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

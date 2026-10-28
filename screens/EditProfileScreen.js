@@ -3,7 +3,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -15,7 +14,7 @@ import Notice from '../components/Notice';
 import ProfilePhotoField from '../components/ProfilePhotoField';
 import TextField from '../components/TextField';
 import { BIO_MAX_LENGTH, NAME_MAX_LENGTH, VEHICLE_MAX_LENGTH } from '../lib/format';
-import { colors, gutter, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, spacing, typography } from '../theme/theme';
 
 // Edit Profile, opened from the Profile tab. One form for the whole person:
 // General (name, bio) and the optional Driver information (vehicle
@@ -144,7 +143,7 @@ export default function EditProfileScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   flex: {
     flex: 1,
   },
@@ -185,4 +184,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },
-});
+}));

@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, gutter, spacing, typography } from '../theme/theme';
+import { Text, View } from 'react-native';
+import { colors, createThemedStyles, gutter, spacing, typography } from '../theme/theme';
 
 // Large title at the top of a tab screen, with optional subtitle and a right
 // slot (e.g. an avatar or action).
@@ -21,7 +21,7 @@ export default function ScreenHeader({ title, subtitle, right }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -44,4 +44,4 @@ const styles = StyleSheet.create({
   right: {
     marginLeft: spacing.md,
   },
-});
+}));

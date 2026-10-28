@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Card from './Card';
 import Avatar from './Avatar';
@@ -7,7 +7,7 @@ import AppButton from './AppButton';
 import RatingSummary from './RatingSummary';
 import RouteLine from './RouteLine';
 import { formatTimeUntil, getPastRideLabel, isRideDeparted } from '../lib/rideStatus';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // Full-width ride card (a Driver's OFFER). `ride` is one entry of App's
 // `drivers` state. Reads top to bottom: when it leaves, the route, then who
@@ -143,7 +143,7 @@ function StatusPill({ icon, label, color }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     marginBottom: spacing.md,
   },
@@ -229,4 +229,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
   },
-});
+}));

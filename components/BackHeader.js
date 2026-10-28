@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // Header for screens opened on top of a tab (Ride Details, Offer a Ride…):
 // a back link, then the screen title and an optional subtitle.
@@ -23,7 +23,7 @@ export default function BackHeader({ backLabel = 'Back', onBack, title, subtitle
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     marginBottom: spacing.lg,
   },
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
   },
-});
+}));

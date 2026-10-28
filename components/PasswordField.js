@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import TextField from './TextField';
-import { colors } from '../theme/theme';
+import { colors, createThemedStyles } from '../theme/theme';
 
 // A TextField for passwords: hidden by default, with an eye button to show
 // or hide what's typed. `textContentType` lets iOS offer saved passwords
@@ -35,7 +35,7 @@ export default function PasswordField({ textContentType = 'password', ...fieldPr
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   toggle: {
     paddingLeft: 10,
     paddingVertical: 8,
@@ -43,4 +43,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.6,
   },
-});
+}));

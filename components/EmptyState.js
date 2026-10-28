@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from './AppButton';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // Friendly placeholder for screens/sections with nothing to show yet, with an
 // optional action button (e.g. Refresh). tone="danger" is the error version
@@ -31,7 +31,7 @@ export default function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   wrap: {
     alignItems: 'center',
     paddingVertical: spacing.xxl + spacing.xs,
@@ -69,4 +69,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     paddingHorizontal: spacing.xl,
   },
-});
+}));

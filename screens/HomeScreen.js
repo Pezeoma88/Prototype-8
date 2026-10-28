@@ -6,7 +6,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -28,7 +27,7 @@ import RiderCard from '../components/RiderCard';
 import RideFilterPanel from '../components/RideFilterPanel';
 import { RIDE_SORT_OPTIONS } from '../lib/format';
 import { DEFAULT_RIDE_FILTERS } from '../lib/rideFilters';
-import { colors, gutter, radius, shadow, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, radius, shadow, spacing, typography } from '../theme/theme';
 
 // "Good morning" / "Good afternoon" / "Good evening" from the device clock.
 function getGreeting() {
@@ -228,7 +227,10 @@ export default function HomeScreen({
             right={<Badge label={String(drivers.length)} tone="primary" />}
           />
 
-          {!isDriver && drivers.length > 0 && (
+          {/* Always shown in Rider mode, even with zero upcoming rides, so
+              Find a Ride lands on the search bar and Filters button. The
+              empty states below explain when nothing is listed. */}
+          {!isDriver && (
             <RideFilterPanel
               filters={rideFilters}
               onChange={handleChangeRideFilters}
@@ -458,7 +460,7 @@ function ActionTile({ icon, title, subtitle, tint = colors.primary, filled = fal
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   safe: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -629,4 +631,4 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     marginTop: spacing.xl,
   },
-});
+}));

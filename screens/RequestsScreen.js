@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from '../components/AppButton';
 import Avatar from '../components/Avatar';
@@ -14,7 +14,7 @@ import StarRating from '../components/StarRating';
 import { formatDeparture } from '../lib/format';
 import { getReviewEligibility } from '../lib/reviews';
 import { getPastRideLabel, isRideUpcoming, sortPastRides } from '../lib/rideStatus';
-import { colors, gutter, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, radius, spacing, typography } from '../theme/theme';
 
 // Requests tab: every request in one place, following the current mode.
 //   Rider mode   the requests I've sent, grouped by status, with View Ride,
@@ -540,7 +540,7 @@ function RideHeading({ ride, onOpenRide, isPast = false }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   content: {
     paddingBottom: spacing.xxxl,
   },
@@ -671,4 +671,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginLeft: spacing.sm,
   },
-});
+}));

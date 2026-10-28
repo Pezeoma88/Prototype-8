@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, radius, spacing, typography } from '../theme/theme';
 
 // Compact search field with a suggestion list underneath, used in place of
 // long rows of preset chips. Typing filters `options` ({ key, label }) and
@@ -105,7 +105,7 @@ export default function SearchableSelect({
           placeholder={isOpen && !freeText ? 'Search places' : placeholder}
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.primary}
-          keyboardAppearance="light"
+          keyboardAppearance={getColorScheme()}
           autoCorrect={false}
           returnKeyType="done"
           onSubmitEditing={close}
@@ -202,7 +202,7 @@ function SuggestionRow({ label, icon, isSelected, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   label: {
     ...typography.label,
     color: colors.textMuted,
@@ -282,4 +282,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: spacing.md,
   },
-});
+}));

@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Card from './Card';
 import Avatar from './Avatar';
 import Badge from './Badge';
 import AppButton from './AppButton';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // Riders Looking for a Ride card (a Rider's REQUEST for transportation, not
 // a Driver's offer). Teal accent stripe, teal avatar, and a "Needs a
@@ -52,7 +52,7 @@ export default function RiderCard({ rider, isSelf, onRemove }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     marginBottom: spacing.md,
     paddingLeft: spacing.lg + 4,
@@ -112,4 +112,4 @@ const styles = StyleSheet.create({
   removeButton: {
     marginTop: spacing.md,
   },
-});
+}));

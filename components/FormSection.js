@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Card from './Card';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // A titled card that groups related form fields or details (e.g. "Route",
 // "When", "Seats"), so long forms read as a few clear steps.
@@ -26,7 +26,7 @@ export default function FormSection({ title, icon, tint = colors.primary, right,
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     marginBottom: spacing.md,
   },
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
   right: {
     marginLeft: spacing.sm,
   },
-});
+}));

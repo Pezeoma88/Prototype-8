@@ -15,7 +15,7 @@ import {
   formatMiles,
   straightLineMeters,
 } from '../lib/routing';
-import { colors, gutter, radius, shadow, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, getColorScheme, gutter, radius, shadow, spacing, typography } from '../theme/theme';
 
 // Map tab: the rides on the board, shown as pins at their pickup spots
 // around the SMU campus. Rides leaving from the same spot share one pin;
@@ -174,7 +174,7 @@ export default function MapScreen({
           ref={mapRef}
           style={StyleSheet.absoluteFill}
           initialRegion={SMU_MAP_REGION}
-          userInterfaceStyle="light"
+          userInterfaceStyle={getColorScheme()}
           showsUserLocation={false}
           toolbarEnabled={false}
           onPress={(event) => {
@@ -482,7 +482,7 @@ function isSameText(a, b) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   screen: {
     flex: 1,
   },
@@ -662,4 +662,4 @@ const styles = StyleSheet.create({
   routeAction: {
     flex: 1,
   },
-});
+}));

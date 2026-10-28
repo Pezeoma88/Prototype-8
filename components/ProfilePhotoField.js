@@ -1,9 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import AppButton from './AppButton';
 import Avatar from './Avatar';
 import Notice from './Notice';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 // Profile photo picker shared by Edit Profile and onboarding: tap the avatar
 // (or the button) to pick from the library. A picked photo is only a preview
@@ -76,7 +76,7 @@ export default function ProfilePhotoField({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   photoRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -128,4 +128,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-});
+}));

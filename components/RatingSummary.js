@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import StarRating from './StarRating';
-import { colors, typography } from '../theme/theme';
+import { colors, createThemedStyles, typography } from '../theme/theme';
 
 // A driver's average rating and review count, e.g. "★ 4.5 · 3 reviews".
 // `rating` is { average, count }, null for a driver with no reviews yet
@@ -38,7 +38,7 @@ export default function RatingSummary({ rating, stars = false, style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     marginLeft: 5,
   },
-});
+}));

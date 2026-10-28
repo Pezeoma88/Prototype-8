@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Avatar from '../components/Avatar';
 import AppButton from '../components/AppButton';
@@ -8,8 +8,15 @@ import InfoRow from '../components/InfoRow';
 import ModeToggle from '../components/ModeToggle';
 import RatingSummary from '../components/RatingSummary';
 import ReviewList from '../components/ReviewList';
+import SegmentedControl from '../components/SegmentedControl';
 import DemoNetworkPanel from '../components/DemoNetworkPanel';
-import { colors, gutter, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, gutter, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
+
+// Light/Dark choices for the Appearance card.
+const APPEARANCE_OPTIONS = [
+  { key: 'light', label: 'Light' },
+  { key: 'dark', label: 'Dark' },
+];
 
 // Profile tab, laid out for the full Prototype 5 profile (photo, bio,
 // vehicle, ratings, reviews). Photo, name, bio, and vehicle make/model are
@@ -23,12 +30,15 @@ import { colors, gutter, radius, roleColor, shadow, spacing, typography } from '
 // and Rider (App's activeMode) without signing out; the sections below
 // follow the current mode: Vehicle, license, and reviews in Driver mode, a
 // "Looking for a Ride" card in Rider mode. The vehicle stays saved either way.
+// Appearance switches Light/Dark (App's colorScheme) right away.
 export default function ProfileScreen({
   currentUser,
   activeMode,
   handleSetMode,
   handleStartEditProfile,
   handleOpenOnboarding,
+  colorScheme,
+  handleSetColorScheme,
   handleSignOut,
   myDriverRating,
   myDriverReviews,
@@ -140,6 +150,18 @@ export default function ProfileScreen({
         </FormSection>
       )}
 
+      {/* Appearance: Light (white) or Dark (navy), saved on this phone */}
+      <FormSection title="Appearance" icon="contrast-outline" tint={colors.primary}>
+        <Text style={styles.modeText}>
+          Choose how CarpoolBoard looks. Your choice is saved on this phone.
+        </Text>
+        <SegmentedControl
+          options={APPEARANCE_OPTIONS}
+          value={colorScheme}
+          onChange={handleSetColorScheme}
+        />
+      </FormSection>
+
       {/* Account */}
       <FormSection title="Account" icon="settings-outline" tint={colors.textMuted}>
         <InfoRow icon="person-outline" label="Name" value={currentUser.name} />
@@ -219,7 +241,7 @@ function PlaceholderText({ icon, text, detail, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   devTools: {
     marginTop: spacing.xxl,
   },
@@ -345,4 +367,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
-});
+}));

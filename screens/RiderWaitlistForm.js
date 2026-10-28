@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import AppButton from '../components/AppButton';
 import BackHeader from '../components/BackHeader';
 import FormSection from '../components/FormSection';
 import Notice from '../components/Notice';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 const STEPS = [
   'Join Riders Looking for a Ride so drivers can see you need transportation.',
@@ -67,7 +67,7 @@ export default function RiderWaitlistForm({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   stepRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -104,4 +104,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },
-});
+}));

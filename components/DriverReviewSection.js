@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 import AppButton from './AppButton';
 import FormSection from './FormSection';
 import Notice from './Notice';
@@ -7,7 +7,7 @@ import StarRating from './StarRating';
 import TextField from './TextField';
 import { formatDeparture } from '../lib/format';
 import { REVIEW_MAX_LENGTH } from '../lib/reviews';
-import { colors, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, spacing, typography } from '../theme/theme';
 
 const RATING_WORDS = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
 
@@ -130,7 +130,7 @@ export default function DriverReviewSection({ driverName, eligibility, onSubmit,
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   body: {
     ...typography.label,
     color: colors.textMuted,
@@ -157,4 +157,4 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     marginTop: spacing.sm,
   },
-});
+}));

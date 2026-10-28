@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { colors, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, roleColor, shadow, spacing, typography } from '../theme/theme';
 
 const MODES = [
   { key: 'driver', label: 'Driver', icon: 'car-sport', hint: 'Offer rides and manage requests for them' },
@@ -51,7 +51,7 @@ export default function ModeToggle({ activeMode, onChange, style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   track: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceSunken,
@@ -80,4 +80,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginLeft: spacing.sm,
   },
-});
+}));

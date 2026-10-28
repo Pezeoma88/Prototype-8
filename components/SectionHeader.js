@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, roleColor, spacing, typography } from '../theme/theme';
+import { Text, View } from 'react-native';
+import { colors, createThemedStyles, roleColor, spacing, typography } from '../theme/theme';
 
 // Section title with an optional subtitle and an optional element on the
 // right (usually a count Badge). `role` adds a small dot in the role's
@@ -25,7 +25,7 @@ export default function SectionHeader({ title, subtitle, role, right, style }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
   right: {
     marginLeft: spacing.sm,
   },
-});
+}));

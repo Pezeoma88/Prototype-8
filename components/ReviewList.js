@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Avatar from './Avatar';
 import Card from './Card';
 import StarRating from './StarRating';
 import { formatReviewDate } from '../lib/reviews';
-import { colors, radius, spacing, typography } from '../theme/theme';
+import { colors, createThemedStyles, radius, spacing, typography } from '../theme/theme';
 
 // A driver's reviews, newest first. `reviews` comes from toReviewDisplay
 // in lib/reviews.js, or is null when reviews couldn't be loaded.
@@ -43,7 +43,7 @@ export default function ReviewList({ reviews, emptyText = 'No reviews yet.', cur
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createThemedStyles(() => ({
   card: {
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -88,4 +88,4 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     marginBottom: spacing.xl,
   },
-});
+}));
